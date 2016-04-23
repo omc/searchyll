@@ -20,7 +20,11 @@ Or install it yourself as:
 
     $ gem install searchyou
 
-Alternatively, you can set up
+Alternatively, if you would like to test locally, you can clone the project and add this to your Jekyll sites' `Gemfile`:
+
+```
+gem 'searchyou', path: "/path/to/searchyll/"
+```
 
 ## Usage
 
@@ -28,7 +32,10 @@ You'll need to add an Elasticsearch section to your Jekll site's `_config.yml` l
 
 ```
 elasticsearch:
-  url: "http://localhost:9200/"
+  url: "http://localhost:9200/" # Required. Supports auth and SSL: https://user:pass@someurl.com
+  number_of_shards: 1           # Optional. Default is 1 primary shard.
+  number_of_replicas: 1         # Optional. Default is 0 replicas.
+  index_name: "jekyll"          # Optional. Default is "jekyll"
 ```
 
 You'll also need to add it to the `gems` section in that same `_config.yml` file. This will tell Jekyll to run the searchyou plugin when the site is being generated:
