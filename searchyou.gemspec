@@ -9,9 +9,14 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Nick Zadrozny"]
   spec.email         = ["nick@beyondthepath.com"]
 
-  spec.summary       = %q{Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{Write a longer description or delete this line.}
+  spec.summary       = %q{Add Elasticsearch to your Jekyll pages!}
+  spec.description   = <<-EOF
+                          The searchyou gem indexes your content to a predefined
+                          Elasticsearch cluster. This allows you to provide a
+                          blazing fast, customizeable search backend to your site.
+                       EOF
   spec.homepage      = "https://bonsai.io/"
+  spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
@@ -20,9 +25,8 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "rspec"
-  spec.add_development_dependency "jekyll"
-
-  spec.add_dependency "elasticsearch-ruby"
-
+  spec.add_development_dependency "rspec", '~> 0'
+  spec.add_development_dependency "jekyll", '~> 0'
+  spec.add_dependency "elasticsearch-ruby", '~> 0'
+  spec.add_dependency "elasticsearch", '~> 0'
 end

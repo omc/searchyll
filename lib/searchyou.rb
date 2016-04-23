@@ -1,4 +1,5 @@
 require "searchyou/version"
+require "searchyou/indexer"
 require "net/http"
 require "json"
 
@@ -12,14 +13,17 @@ module Jekyll
 
       indexer = Searchyou::Indexer.new(site)
       indexer.run!
-
       site.posts.docs.each do |doc|
-        indexer << doc.data.merge({
-          id: doc.basename_without_ext,
-          content: doc.content
-        })
+        indexer << {
+          index: {
+            _index: indexer.es_index_name,
+            _type: 'post',
+            data: {
+              content: doc.content
+            }
+          }
+        }
       end
-
       indexer.done!
     end
   end
