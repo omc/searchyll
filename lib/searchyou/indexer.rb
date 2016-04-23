@@ -1,9 +1,10 @@
 module Searchyou
   class Indexer
+    require "elasticsearch"
 
     BATCH_SIZE = 50
 
-    attr_accessor :queue, :working, :site, :timestamp, :es
+    attr_accessor :es, :indexer_thread, :queue, :site, :timestamp, :working
 
     def initialize(site)
       self.site = site
@@ -33,6 +34,7 @@ module Searchyou
         index: es_index_name
       )
       # todo: mapping?
+      # settings: default is 5x1 sharding
       # set refresh interval to -1
       # set replication to 0?
     end
@@ -48,7 +50,7 @@ module Searchyou
     end
 
     def es_bulk_insert!(batch)
-      # es
+      es.bulk body: batch
     end
 
     def current_batch
