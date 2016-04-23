@@ -37,7 +37,7 @@ module Searchyou
     end
 
     def number_of_replicas
-      site.config['elasticsearch']['number_of_replicas'] || 1
+      site.config['elasticsearch']['number_of_replicas'] || 0
     end
 
     # Prepare our indexing run by creating a new index.
