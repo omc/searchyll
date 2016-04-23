@@ -12,7 +12,6 @@ module Jekyll
     def generate(site)
 
       indexer = Searchyou::Indexer.new(site)
-      indexer.run!
       site.posts.docs.each do |doc|
         indexer << {
           index: {
@@ -24,6 +23,7 @@ module Jekyll
           }
         }
       end
+      indexer.run!
       indexer.done!
     end
   end
