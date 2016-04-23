@@ -1,9 +1,10 @@
 module Searchyou
   class Indexer
+    require "elasticsearch"
 
     BATCH_SIZE = 50
 
-    attr_accessor :queue, :working, :site, :timestamp, :es
+    attr_accessor :es, :indexer_thread, :queue, :site, :timestamp, :working
 
     def initialize(site)
       self.site = site
@@ -23,18 +24,37 @@ module Searchyou
       working || queue.length > 0
     end
 
+    def es_index_prefix
+      site.config['elasticsearch']['index_name'] || "jekyll"
+    end
+
     def es_index_name
-      "jekyll-#{timestamp.strftime('%Y%m%d%H%M%S')}"
+      "#{es_index_prefix}-#{timestamp.strftime('%Y%m%d%H%M%S')}"
+    end
+
+    def number_of_shards
+      site.config['elasticsearch']['number_of_shards'] || 1
+    end
+
+    def number_of_replicas
+      site.config['elasticsearch']['number_of_replicas'] || 0
     end
 
     # Prepare our indexing run by creating a new index.
     def prepare!
       es.indices.create(
-        index: es_index_name
+        index: es_index_name,
+        body: {
+          settings: {
+            index: {
+              number_of_shards: number_of_shards,
+              number_of_replicas: number_of_replicas,
+              refresh_interval: "-1"
+            }
+          }
+        }
       )
       # todo: mapping?
-      # set refresh interval to -1
-      # set replication to 0?
     end
 
     def run!
@@ -48,7 +68,7 @@ module Searchyou
     end
 
     def es_bulk_insert!(batch)
-      # es
+      es.bulk body: batch
     end
 
     def current_batch
@@ -68,9 +88,27 @@ module Searchyou
     end
 
     def finalize!
-      # post /_refresh
-      # update alias
-      # cleanup old indices?
+
+      # Update refresh interval
+      es.indices.put_settings index: es_index_name, body: {
+        index: {
+          refresh_interval: "1s"
+        }
+      }
+
+      # Update Alias
+      es.indices.update_aliases body: {
+        actions: [
+          { add: { index: es_index_name, alias: es_index_prefix } }
+        ]
+      }
+
+      # Clean up old indices:
+      indices = []
+      es.cat.indices(index: "#{es_index_prefix}-*", h: 'i', format: 'json').each do |i|
+        indices << i["i"] unless i["i"] == es_index_name
+      end
+      es.indices.delete index: indices.join(",") unless indices.empty?
     end
 
   end
