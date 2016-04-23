@@ -20,9 +20,22 @@ Or install it yourself as:
 
     $ gem install searchyou
 
+Alternatively, you can set up
+
 ## Usage
 
-TODO: Write usage instructions here
+You'll need to add an Elasticsearch section to your Jekll site's `_config.yml` like so:
+
+```
+elasticsearch:
+  url: "http://localhost:9200/"
+```
+
+You'll also need to add it to the `gems` section in that same `_config.yml` file. This will tell Jekyll to run the searchyou plugin when the site is being generated:
+
+```
+gems: [<list of other gems>, 'searchyou']
+```
 
 ## Development
 
@@ -33,4 +46,3 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/searchyou.
-
