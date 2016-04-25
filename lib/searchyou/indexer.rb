@@ -3,16 +3,16 @@ module Searchyou
 
     BATCH_SIZE = 50
 
-    attr_accessor :queue, :working, :site, :timestamp, :es
+    attr_accessor :queue
+    attr_accessor :working
+    attr_accessor :elasticsearch_url
+    attr_accessor :timestamp
 
-    def initialize(site)
-      self.site = site
+    def initialize(elasticsearch_url)
+      self.elasticsearch_url = elasticsearch_url
       self.queue = Queue.new
       self.working = true
       self.timestamp = Time.now
-      self.es = Elasticsearch::Client.new(
-        url: site.config['elasticsearch']['url']
-      )
     end
 
     def <<(doc)
@@ -28,7 +28,7 @@ module Searchyou
     end
 
     # Prepare our indexing run by creating a new index.
-    def prepare!
+    def prepare_index
       es.indices.create(
         index: es_index_name
       )
@@ -37,8 +37,9 @@ module Searchyou
       # set replication to 0?
     end
 
-    def run!
-      prepare!
+    def start
+      prepare_index
+
       self.indexer_thread = Thread.new do
         loop do
           break unless working?
