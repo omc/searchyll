@@ -7,6 +7,7 @@ module Searchyou
     BATCH_SIZE = 50
 
     attr_accessor :indexer_thread
+    attr_accessor :old_indices
     attr_accessor :queue
     attr_accessor :timestamp
     attr_accessor :uri
@@ -87,7 +88,7 @@ module Searchyou
     end
 
     def http_get(path)
-      http_request(Net::HTTP::Post, path)
+      http_request(Net::HTTP::Get, path)
     end
 
     def http_delete(path)
@@ -110,7 +111,6 @@ module Searchyou
       bulk_insert.body = batch.map do |doc|
         [ { :index => {} }.to_json, doc.to_json ].join("\n")
       end.join("\n") + "\n"
-      puts bulk_insert.body
       http.request(bulk_insert)
     end
 
@@ -133,6 +133,14 @@ module Searchyou
       finalize!
     end
 
+    def old_indices
+      resp = http_start { |h| h.request(http_get("/_cat/indices?h=index")) }
+      indices = JSON.parse(resp.body).map{|i|i['index']}
+      indices = indices.select{|i| i =~ /\Ajekyll/ }
+      indices = indices - [ es_index_name ]
+      self.old_indices = indices
+    end
+
     # Once documents are done being indexed, finalize the process by adding
     # the new index into an alias for searching.
     # TODO: cleanup old indices?
@@ -148,13 +156,13 @@ module Searchyou
       update_aliases = http_post("/_aliases")
       update_aliases.body = {
         "actions": [
-          { "remove": { "index": "*", "alias": "jekyll" }},
+          { "remove": { "index": old_indices.join(','), "alias": "jekyll" }},
           { "add":    { "index": es_index_name, "alias": "jekyll" }}
         ]
       }.to_json
 
       # delete old indices
-      cleanup_indices = http_delete("/jekyll-*,-#{es_index_name}")
+      cleanup_indices = http_delete("/#{old_indices.join(',')}")
 
       # run the prepared requests
       http_start do |http|
