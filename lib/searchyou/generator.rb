@@ -18,9 +18,9 @@ module Searchyou
 
       # Iterate through the site contents and send to indexer
       # TODO: what are we indexing?
-      site.posts.docs.each do |doc|
+      site.posts.each do |doc|
         indexer << doc.data.merge({
-          id: doc.basename_without_ext,
+          id: doc.id,
           content: doc.content
         })
       end
