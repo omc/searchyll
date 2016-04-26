@@ -7,6 +7,7 @@ module Searchyou
     attr_accessor :working
     attr_accessor :elasticsearch_url
     attr_accessor :timestamp
+    attr_accessor :indexer_thread
 
     def initialize(elasticsearch_url)
       self.elasticsearch_url = elasticsearch_url
@@ -29,9 +30,9 @@ module Searchyou
 
     # Prepare our indexing run by creating a new index.
     def prepare_index
-      es.indices.create(
-        index: es_index_name
-      )
+      # es.indices.create(
+      #   index: es_index_name
+      # )
       # todo: mapping?
       # set refresh interval to -1
       # set replication to 0?
@@ -62,7 +63,7 @@ module Searchyou
       batch
     end
 
-    def done!
+    def finish
       self.working = false
       indexer_thread.join
       finalize!

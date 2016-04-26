@@ -6,10 +6,15 @@ module Searchyou
     safe true
     priority :lowest
 
+    def self.abort(msg)
+      $stderr.puts(msg)
+    end
+
     def self.elasticsearch_url(site)
       ENV['ELASTICSEARCH_URL'] ||
       ENV['BONSAI_URL'] ||
-      site.config['elasticsearch']['url']
+      ((site.config||{})['elasticsearch']||{})['url'] ||
+      raise(ArgumentError, "No Elasticsearch URL present, skipping indexing")
     end
 
     def generate(site)
@@ -25,6 +30,8 @@ module Searchyou
       end
 
       indexer.finish
+    rescue => e
+      $stderr.puts "Searchyll: #{e.class.name} - #{e.message}"
     end
   end
 
