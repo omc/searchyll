@@ -30,11 +30,30 @@ module Searchyou
       working || queue.length > 0
     end
 
+    # User configurable prefix for the index.
+    def es_index_prefix
+      site.config['elasticsearch']['index_name'] || "jekyll"
+    end
+
+    # User configurable default type
+    def es_default_type
+      site.config['elasticsearch']['default_type'] || 'post'
+    end
+
+    # User configurable setting for primary shards
+    def number_of_shards
+      site.config['elasticsearch']['number_of_shards'] || 1
+    end
+
+    # User configurable setting for replicas
+    def number_of_replicas
+      site.config['elasticsearch']['number_of_replicas'] || 0
+    end
+
     # A versioned index name, based on the time of the indexing run.
     # Will be later added to an alias for hot reindexing.
-    # TODO: base index name should be configurable in the site.config.
     def es_index_name
-      "jekyll-#{timestamp.strftime('%Y%m%d%H%M%S')}"
+      "#{es_index_prefix}-#{timestamp.strftime('%Y%m%d%H%M%S')}"
     end
 
     # Prepare an HTTP connection
@@ -47,16 +66,15 @@ module Searchyou
     end
 
     # Prepare our indexing run by creating a new index.
-    # TODO: make the number of shards configurable or variable
     def prepare_index
       create_index = http_post("/#{es_index_name}")
       create_index.body = {
         index: {
-          number_of_shards:   1,
+          number_of_shards:   number_of_shards,
           number_of_replicas: 0,
           refresh_interval:   -1
         }
-      }.to_json # TODO: index settings
+      }.to_json
 
       http_start do |http|
         resp = http.request(create_index)
@@ -107,7 +125,7 @@ module Searchyou
     # https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
     # TODO: choose a better type name, or make it configurable?
     def es_bulk_insert!(http, batch)
-      bulk_insert = http_post("/#{es_index_name}/post/_bulk")
+      bulk_insert = http_post("/#{es_index_name}/#{es_default_type}/_bulk")
       bulk_insert.body = batch.map do |doc|
         [ { :index => {} }.to_json, doc.to_json ].join("\n")
       end.join("\n") + "\n"
