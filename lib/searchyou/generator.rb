@@ -19,7 +19,6 @@ module Searchyou
       # Iterate through the site contents and send to indexer
       # TODO: what are we indexing?
       site.posts.each do |doc|
-        puts doc.methods
         indexer << doc.data.merge({
           id: doc.id,
           content: doc.content
