@@ -78,9 +78,24 @@ module Searchyou
       end
     end
 
-    # Helper method for creating a Net::HTTP::Post to ES
+    def http_put(path)
+      http_request(Net::HTTP::Put, path)
+    end
+
     def http_post(path)
-      req = Net::HTTP::Post.new(path)
+      http_request(Net::HTTP::Post, path)
+    end
+
+    def http_get(path)
+      http_request(Net::HTTP::Post, path)
+    end
+
+    def http_delete(path)
+      http_request(Net::HTTP::Delete, path)
+    end
+
+    def http_request(klass, path)
+      req = klass.new(path)
       req.content_type = 'application/json'
       req.basic_auth(uri.user, uri.password)
       req
@@ -122,8 +137,14 @@ module Searchyou
     # the new index into an alias for searching.
     # TODO: cleanup old indices?
     def finalize!
+      # refresh the index to make it searchable
       refresh = http_post("/#{es_index_name}/_refresh")
 
+      # add replication to the new index
+      add_replication = http_put("/#{es_index_name}/_settings")
+      add_replication.body = { index: { number_of_replicas: 1 }}.to_json
+
+      # hot swap the index into the canonical alias
       update_aliases = http_post("/_aliases")
       update_aliases.body = {
         "actions": [
@@ -132,9 +153,15 @@ module Searchyou
         ]
       }.to_json
 
+      # delete old indices
+      cleanup_indices = http_delete("/jekyll-*,-#{es_index_name}")
+
+      # run the prepared requests
       http_start do |http|
         http.request(refresh)
+        http.request(add_replication)
         http.request(update_aliases)
+        http.request(cleanup_indices)
       end
     end
 
