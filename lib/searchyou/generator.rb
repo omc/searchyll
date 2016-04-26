@@ -13,7 +13,7 @@ module Searchyou
       url = elasticsearch_url(site)
 
       # Prepare the indexer
-      indexer = Searchyou::Indexer.new(site)
+      indexer = Searchyou::Indexer.new(url)
       indexer.start
 
       # Iterate through the site contents and send to indexer
@@ -32,6 +32,7 @@ module Searchyou
     # Handle any exceptions gracefully
     rescue => e
       $stderr.puts "Searchyll: #{e.class.name} - #{e.message}"
+      raise(e)
     end
 
     # Figure out the Elasticsearch URL, from an environment variable or the
