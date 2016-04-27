@@ -7,7 +7,6 @@ module Searchyou
     BATCH_SIZE = 50
 
     attr_accessor :indexer_thread
-    attr_accessor :old_indices
     attr_accessor :queue
     attr_accessor :timestamp
     attr_accessor :uri
@@ -32,9 +31,8 @@ module Searchyou
 
     # A versioned index name, based on the time of the indexing run.
     # Will be later added to an alias for hot reindexing.
-    # TODO: base index name should be configurable in the site.config.
     def es_index_name
-      "jekyll-#{timestamp.strftime('%Y%m%d%H%M%S')}"
+      "#{Searchyou.configuration.index_name}-#{timestamp.strftime('%Y%m%d%H%M%S')}"
     end
 
     # Prepare an HTTP connection
@@ -47,16 +45,15 @@ module Searchyou
     end
 
     # Prepare our indexing run by creating a new index.
-    # TODO: make the number of shards configurable or variable
     def prepare_index
       create_index = http_post("/#{es_index_name}")
       create_index.body = {
         index: {
-          number_of_shards:   1,
+          number_of_shards:   Searchyou.configuration.number_of_shards,
           number_of_replicas: 0,
           refresh_interval:   -1
         }
-      }.to_json # TODO: index settings
+      }.to_json
 
       http_start do |http|
         resp = http.request(create_index)
@@ -79,24 +76,9 @@ module Searchyou
       end
     end
 
-    def http_put(path)
-      http_request(Net::HTTP::Put, path)
-    end
-
+    # Helper method for creating a Net::HTTP::Post to ES
     def http_post(path)
-      http_request(Net::HTTP::Post, path)
-    end
-
-    def http_get(path)
-      http_request(Net::HTTP::Get, path)
-    end
-
-    def http_delete(path)
-      http_request(Net::HTTP::Delete, path)
-    end
-
-    def http_request(klass, path)
-      req = klass.new(path)
+      req = Net::HTTP::Post.new(path)
       req.content_type = 'application/json'
       req.basic_auth(uri.user, uri.password)
       req
@@ -107,10 +89,11 @@ module Searchyou
     # https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
     # TODO: choose a better type name, or make it configurable?
     def es_bulk_insert!(http, batch)
-      bulk_insert = http_post("/#{es_index_name}/post/_bulk")
+      bulk_insert = http_post("/#{es_index_name}/#{Searchyou.configuration.default_type}/_bulk")
       bulk_insert.body = batch.map do |doc|
         [ { :index => {} }.to_json, doc.to_json ].join("\n")
       end.join("\n") + "\n"
+      puts bulk_insert.body
       http.request(bulk_insert)
     end
 
@@ -133,43 +116,23 @@ module Searchyou
       finalize!
     end
 
-    def old_indices
-      resp = http_start { |h| h.request(http_get("/_cat/indices?h=index")) }
-      indices = JSON.parse(resp.body).map{|i|i['index']}
-      indices = indices.select{|i| i =~ /\Ajekyll/ }
-      indices = indices - [ es_index_name ]
-      self.old_indices = indices
-    end
-
     # Once documents are done being indexed, finalize the process by adding
     # the new index into an alias for searching.
     # TODO: cleanup old indices?
     def finalize!
-      # refresh the index to make it searchable
       refresh = http_post("/#{es_index_name}/_refresh")
 
-      # add replication to the new index
-      add_replication = http_put("/#{es_index_name}/_settings")
-      add_replication.body = { index: { number_of_replicas: 1 }}.to_json
-
-      # hot swap the index into the canonical alias
       update_aliases = http_post("/_aliases")
       update_aliases.body = {
         "actions": [
-          { "remove": { "index": old_indices.join(','), "alias": "jekyll" }},
+          { "remove": { "index": "*", "alias": "jekyll" }},
           { "add":    { "index": es_index_name, "alias": "jekyll" }}
         ]
       }.to_json
 
-      # delete old indices
-      cleanup_indices = http_delete("/#{old_indices.join(',')}")
-
-      # run the prepared requests
       http_start do |http|
         http.request(refresh)
-        http.request(add_replication)
         http.request(update_aliases)
-        http.request(cleanup_indices)
       end
     end
 
