@@ -22,7 +22,16 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```
+elasticsearch:
+  url: "http://localhost:9200/" # Required. Supports auth and SSL: https://user:pass@someurl.com
+                                # Can also read URLs stored in environment variable named
+                                # BONSAI_URL and ELASTICSEARCH_URL.
+  number_of_shards: 1           # Optional. Default is 1 primary shard.
+  number_of_replicas: 1         # Optional. Default is 0 replicas.
+  index_name: "jekyll"          # Optional. Default is "jekyll".
+  default_type: "post"          # Optional. Default type is "post".
+```
 
 ## Development
 
@@ -33,4 +42,3 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/searchyou.
-

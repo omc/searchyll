@@ -1,19 +1,21 @@
 require 'searchyou/indexer'
+require 'searchyou/configuration'
 
 module Searchyou
 
   class Generator < Jekyll::Generator
+
     safe true
     priority :lowest
 
     # Public: Invoked by Jekyll during the generation phase.
     def generate(site)
 
-      # Find the ES URL
-      url = elasticsearch_url(site)
+      # Gather the configuration options
+      configuration = Configuration.new(site)
 
       # Prepare the indexer
-      indexer = Searchyou::Indexer.new(url)
+      indexer = Searchyou::Indexer.new(configuration)
       indexer.start
 
       # Iterate through the site contents and send to indexer
@@ -28,20 +30,11 @@ module Searchyou
       # Signal to the indexer that we're done adding content
       indexer.finish
 
-
     # Handle any exceptions gracefully
     rescue => e
       $stderr.puts "Searchyll: #{e.class.name} - #{e.message}"
+      $stderr.puts "Backtrace: #{e.backtrace.each{|l| puts l};nil}"
       raise(e)
-    end
-
-    # Figure out the Elasticsearch URL, from an environment variable or the
-    # Jekyll site configuration. Raises an exception if none is found, so we
-    # can skip the indexing.
-    def elasticsearch_url(site)
-      ENV['BONSAI_URL'] || ENV['ELASTICSEARCH_URL'] ||
-      ((site.config||{})['elasticsearch']||{})['url'] ||
-      raise(ArgumentError, "No Elasticsearch URL present, skipping indexing")
     end
 
   end

@@ -6,6 +6,7 @@ module Searchyou
 
     BATCH_SIZE = 50
 
+    attr_accessor :configuration
     attr_accessor :indexer_thread
     attr_accessor :old_indices
     attr_accessor :queue
@@ -13,8 +14,9 @@ module Searchyou
     attr_accessor :uri
     attr_accessor :working
 
-    def initialize(elasticsearch_url)
-      self.uri = URI(elasticsearch_url)
+    def initialize(configuration)
+      self.configuration = configuration
+      self.uri = URI(configuration.elasticsearch_url)
       self.queue = Queue.new
       self.working = true
       self.timestamp = Time.now
@@ -32,9 +34,8 @@ module Searchyou
 
     # A versioned index name, based on the time of the indexing run.
     # Will be later added to an alias for hot reindexing.
-    # TODO: base index name should be configurable in the site.config.
-    def es_index_name
-      "jekyll-#{timestamp.strftime('%Y%m%d%H%M%S')}"
+    def elasticsearch_index_name
+      "#{configuration.elasticsearch_index_base_name}-#{timestamp.strftime('%Y%m%d%H%M%S')}"
     end
 
     # Prepare an HTTP connection
@@ -47,12 +48,11 @@ module Searchyou
     end
 
     # Prepare our indexing run by creating a new index.
-    # TODO: make the number of shards configurable or variable
     def prepare_index
-      create_index = http_post("/#{es_index_name}")
+      create_index = http_post("/#{elasticsearch_index_name}")
       create_index.body = {
         index: {
-          number_of_shards:   1,
+          number_of_shards:   configuration.elasticsearch_number_of_shards,
           number_of_replicas: 0,
           refresh_interval:   -1
         }
@@ -105,9 +105,8 @@ module Searchyou
     # Given a batch (array) of documents, index them into Elasticsearch
     # using its Bulk Update API.
     # https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
-    # TODO: choose a better type name, or make it configurable?
     def es_bulk_insert!(http, batch)
-      bulk_insert = http_post("/#{es_index_name}/post/_bulk")
+      bulk_insert = http_post("/#{elasticsearch_index_name}/#{configuration.elasticsearch_default_type}/_bulk")
       bulk_insert.body = batch.map do |doc|
         [ { :index => {} }.to_json, doc.to_json ].join("\n")
       end.join("\n") + "\n"
@@ -136,28 +135,27 @@ module Searchyou
     def old_indices
       resp = http_start { |h| h.request(http_get("/_cat/indices?h=index")) }
       indices = JSON.parse(resp.body).map{|i|i['index']}
-      indices = indices.select{|i| i =~ /\Ajekyll/ }
-      indices = indices - [ es_index_name ]
+      indices = indices.select{|i| i =~ /\A#{configuration.elasticsearch_index_base_name}/ }
+      indices = indices - [ elasticsearch_index_name ]
       self.old_indices = indices
     end
 
     # Once documents are done being indexed, finalize the process by adding
     # the new index into an alias for searching.
-    # TODO: cleanup old indices?
     def finalize!
       # refresh the index to make it searchable
-      refresh = http_post("/#{es_index_name}/_refresh")
+      refresh = http_post("/#{elasticsearch_index_name}/_refresh")
 
       # add replication to the new index
-      add_replication = http_put("/#{es_index_name}/_settings")
-      add_replication.body = { index: { number_of_replicas: 1 }}.to_json
+      add_replication = http_put("/#{elasticsearch_index_name}/_settings")
+      add_replication.body = { index: { number_of_replicas: configuration.elasticsearch_number_of_replicas }}.to_json
 
       # hot swap the index into the canonical alias
       update_aliases = http_post("/_aliases")
       update_aliases.body = {
         "actions": [
-          { "remove": { "index": old_indices.join(','), "alias": "jekyll" }},
-          { "add":    { "index": es_index_name, "alias": "jekyll" }}
+          { "remove": { "index": old_indices.join(','), "alias": configuration.elasticsearch_index_base_name }},
+          { "add":    { "index": elasticsearch_index_name, "alias": configuration.elasticsearch_index_base_name }}
         ]
       }.to_json
 
