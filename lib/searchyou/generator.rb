@@ -19,7 +19,7 @@ module Searchyou
       Searchyou.configure(site)
 
       # Prepare the indexer
-      indexer = Searchyou::Indexer.new(Searchyou.configuration.url)
+      indexer = Searchyou::Indexer.new(Searchyou.configuration)
       indexer.start
 
       # Iterate through the site contents and send to indexer
@@ -48,23 +48,11 @@ module Searchyou
     self.configuration ||= Configuration.new(site)
   end
 
+  # Class containing configuration options
   class Configuration
-    attr_accessor :url, :number_of_shards, :number_of_replicas, :index_name, :default_type
-
+    attr_accessor :site
     def initialize(site)
-
-      # Figure out the Elasticsearch URL, from an environment variable or the
-      # Jekyll site configuration. Raises an exception if none is found, so we
-      # can skip the indexing.
-      @url = ENV['BONSAI_URL'] || ENV['ELASTICSEARCH_URL'] ||
-              ((site.config||{})['elasticsearch']||{})['url'] ||
-              raise(ArgumentError, "No Elasticsearch URL present, skipping indexing")
-
-      # Get the rest of the config options, or use the defaults:
-      @number_of_shards = site.config['elasticsearch']['number_of_shards'] || 1
-      @number_of_replicas = site.config['elasticsearch']['number_of_replicas'] || 1
-      @index_name = site.config['elasticsearch']['index_name'] || "jekyll"
-      @default_type = site.config['elasticsearch']['default_type'] || 'post'
+      @site = site.config
     end
   end
 end
