@@ -6,6 +6,7 @@ module Searchyou
 
     BATCH_SIZE = 50
 
+    attr_accessor :configuration
     attr_accessor :indexer_thread
     attr_accessor :old_indices
     attr_accessor :queue
@@ -14,37 +15,11 @@ module Searchyou
     attr_accessor :working
 
     def initialize(configuration)
-      self.uri = URI(elasticsearch_url)
+      self.configuration = configuration
+      self.uri = URI(configuration.elasticsearch_url)
       self.queue = Queue.new
       self.working = true
       self.timestamp = Time.now
-    end
-
-    # Determine a URL for the cluster, or fail with error
-    def elasticsearch_url
-      ENV['BONSAI_URL'] || ENV['ELASTICSEARCH_URL'] ||
-        ((Searchyou.configuration.site||{})['elasticsearch']||{})['url'] ||
-        raise(ArgumentError, "No Elasticsearch URL present, skipping indexing")
-    end
-
-    # Getter for the number of primary shards
-    def elasticsearch_number_of_shards
-      Searchyou.configuration.site['elasticsearch']['number_of_shards'] || 1
-    end
-
-    # Getter for the number of replicas
-    def elasticsearch_number_of_replicas
-      Searchyou.configuration.site['elasticsearch']['number_of_replicas'] || 1
-    end
-
-    # Getter for the index name
-    def elasticsearch_index_base_name
-      Searchyou.configuration.site['elasticsearch']['index_name'] || "jekyll"
-    end
-
-    # Getter for the default type
-    def elasticsearch_default_type
-      Searchyou.configuration.site['elasticsearch']['default_type'] || 'post'
     end
 
     # Public: Add new documents for batch indexing.
@@ -60,7 +35,7 @@ module Searchyou
     # A versioned index name, based on the time of the indexing run.
     # Will be later added to an alias for hot reindexing.
     def elasticsearch_index_name
-      "#{elasticsearch_index_base_name}-#{timestamp.strftime('%Y%m%d%H%M%S')}"
+      "#{configuration.elasticsearch_index_base_name}-#{timestamp.strftime('%Y%m%d%H%M%S')}"
     end
 
     # Prepare an HTTP connection
@@ -77,7 +52,7 @@ module Searchyou
       create_index = http_post("/#{elasticsearch_index_name}")
       create_index.body = {
         index: {
-          number_of_shards:   elasticsearch_number_of_shards,
+          number_of_shards:   configuration.elasticsearch_number_of_shards,
           number_of_replicas: 0,
           refresh_interval:   -1
         }
@@ -131,7 +106,7 @@ module Searchyou
     # using its Bulk Update API.
     # https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
     def es_bulk_insert!(http, batch)
-      bulk_insert = http_post("/#{elasticsearch_index_name}/#{elasticsearch_default_type}/_bulk")
+      bulk_insert = http_post("/#{elasticsearch_index_name}/#{configuration.elasticsearch_default_type}/_bulk")
       bulk_insert.body = batch.map do |doc|
         [ { :index => {} }.to_json, doc.to_json ].join("\n")
       end.join("\n") + "\n"
@@ -160,7 +135,7 @@ module Searchyou
     def old_indices
       resp = http_start { |h| h.request(http_get("/_cat/indices?h=index")) }
       indices = JSON.parse(resp.body).map{|i|i['index']}
-      indices = indices.select{|i| i =~ /\A#{elasticsearch_index_base_name}/ }
+      indices = indices.select{|i| i =~ /\A#{configuration.elasticsearch_index_base_name}/ }
       indices = indices - [ elasticsearch_index_name ]
       self.old_indices = indices
     end
@@ -173,14 +148,14 @@ module Searchyou
 
       # add replication to the new index
       add_replication = http_put("/#{elasticsearch_index_name}/_settings")
-      add_replication.body = { index: { number_of_replicas: elasticsearch_number_of_replicas }}.to_json
+      add_replication.body = { index: { number_of_replicas: configuration.elasticsearch_number_of_replicas }}.to_json
 
       # hot swap the index into the canonical alias
       update_aliases = http_post("/_aliases")
       update_aliases.body = {
         "actions": [
-          { "remove": { "index": old_indices.join(','), "alias": elasticsearch_index_base_name }},
-          { "add":    { "index": elasticsearch_index_name, "alias": elasticsearch_index_base_name }}
+          { "remove": { "index": old_indices.join(','), "alias": configuration.elasticsearch_index_base_name }},
+          { "add":    { "index": elasticsearch_index_name, "alias": configuration.elasticsearch_index_base_name }}
         ]
       }.to_json
 
