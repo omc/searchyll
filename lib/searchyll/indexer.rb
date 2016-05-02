@@ -1,7 +1,7 @@
 require 'json'
 require 'net/http'
 
-module Searchyou
+module Searchyll
   class Indexer
 
     BATCH_SIZE = 50

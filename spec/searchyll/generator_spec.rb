@@ -1,9 +1,9 @@
 require File.expand_path('../spec_helper', File.dirname(__FILE__))
 
-describe Searchyou::Generator do
+describe Searchyll::Generator do
 
   it 'is a Jekyll Generator' do
-    expect(Searchyou::Generator.new).to be_a(Jekyll::Generator)
+    expect(Searchyll::Generator.new).to be_a(Jekyll::Generator)
   end
 
   let(:jekyll_site) do
@@ -15,7 +15,7 @@ describe Searchyou::Generator do
 
   # TODO: integrated site generation
   it 'can generate an index' do
-    g = Searchyou::Generator.new
+    g = Searchyll::Generator.new
     g.generate(jekyll_site)
   end
 

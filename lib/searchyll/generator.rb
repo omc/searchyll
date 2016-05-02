@@ -1,7 +1,7 @@
-require 'searchyou/indexer'
-require 'searchyou/configuration'
+require 'searchyll/indexer'
+require 'searchyll/configuration'
 
-module Searchyou
+module Searchyll
 
   class Generator < Jekyll::Generator
 
@@ -15,7 +15,7 @@ module Searchyou
       configuration = Configuration.new(site)
 
       # Prepare the indexer
-      indexer = Searchyou::Indexer.new(configuration)
+      indexer = Searchyll::Indexer.new(configuration)
       indexer.start
 
       # Iterate through the site contents and send to indexer

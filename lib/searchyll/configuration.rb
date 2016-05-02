@@ -1,4 +1,4 @@
-module Searchyou
+module Searchyll
   class Configuration
     attr_accessor :site
     def initialize(site)
