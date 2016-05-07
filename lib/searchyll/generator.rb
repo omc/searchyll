@@ -20,11 +20,15 @@ module Searchyll
 
       # Iterate through the site contents and send to indexer
       # TODO: what are we indexing?
-      site.posts.each do |doc|
-        indexer << doc.data.merge({
-          id: doc.id,
-          content: doc.content
-        })
+      # site.posts.each do |doc|
+      #   indexer << doc.data.merge({
+      #     id: doc.id,
+      #     content: doc.content
+      #   })
+      # end
+
+      Jekyll::Hooks.register :posts, :post_render do |post|
+        puts post.output
       end
 
       # Signal to the indexer that we're done adding content
