@@ -11,6 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{A gem to index your Jekyll pages into Elasticsearch.}
   spec.homepage      = "https://github.com/omc/searchyll"
+  spec.licenses      = "GPL-3.0"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
