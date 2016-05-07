@@ -6,12 +6,11 @@ require 'searchyll/version'
 Gem::Specification.new do |spec|
   spec.name          = "searchyll"
   spec.version       = Searchyll::VERSION
-  spec.authors       = ["Nick Zadrozny"]
-  spec.email         = ["nick@beyondthepath.com"]
+  spec.authors       = [ "Nick Zadrozny", "Allison Zadrozny", "Rob Sears"]
+  spec.email         = [ "nick@bonsai.io", "allison@bonsai.io", "rob@bonsai.io" ]
 
-  spec.summary       = %q{Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{Write a longer description or delete this line.}
-  spec.homepage      = "https://bonsai.io/"
+  spec.summary       = %q{A gem to index your Jekyll pages into Elasticsearch.}
+  spec.homepage      = "https://github.com/omc/searchyll"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
@@ -22,8 +21,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "guard-rspec"
-  spec.add_development_dependency "jekyll", ">=3.0"
 
+  spec.add_dependency "jekyll", ">= 3.0"
   spec.add_dependency "elasticsearch-ruby"
   spec.add_dependency "nokogiri"
 
