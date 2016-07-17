@@ -161,13 +161,16 @@ module Searchyll
 
       # delete old indices
       cleanup_indices = http_delete("/#{old_indices.join(',')}")
+      print %(Old indices: #{old_indices})
 
       # run the prepared requests
       http_start do |http|
         http.request(refresh)
         http.request(add_replication)
         http.request(update_aliases)
-        http.request(cleanup_indices)
+        if !old_indices.empty?
+          http.request(cleanup_indices)
+        end
       end
     end
 
