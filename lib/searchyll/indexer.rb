@@ -49,7 +49,7 @@ module Searchyll
 
     # Prepare our indexing run by creating a new index.
     def prepare_index
-      create_index = http_post("/#{elasticsearch_index_name}")
+      create_index = http_put("/#{elasticsearch_index_name}")
       create_index.body = {
         index: {
           number_of_shards:   configuration.elasticsearch_number_of_shards,
