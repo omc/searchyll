@@ -98,6 +98,7 @@ module Searchyll
     def http_request(klass, path)
       req = klass.new(path)
       req.content_type = 'application/json'
+      req['Accept']    = 'application/json'
       req.basic_auth(uri.user, uri.password)
       req
     end
