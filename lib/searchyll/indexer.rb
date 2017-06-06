@@ -162,7 +162,7 @@ module Searchyll
 
       # delete old indices
       cleanup_indices = http_delete("/#{old_indices.join(',')}")
-      print %(Old indices: #{old_indices})
+      puts %(       Old indices: #{old_indices.join(', ')})
 
       # run the prepared requests
       http_start do |http|
