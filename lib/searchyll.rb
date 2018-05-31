@@ -28,7 +28,7 @@ begin
 
     indexer = indexers[page.site]
     indexer << page.data.merge({
-      id:     page.name,
+      id:     page.title,
       url:    page.url,
       text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
     })
