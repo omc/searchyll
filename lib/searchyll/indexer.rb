@@ -4,7 +4,7 @@ require 'net/http'
 module Searchyll
   class Indexer
 
-    BATCH_SIZE = 50
+    PACE = 1
 
     attr_accessor :configuration
     attr_accessor :indexer_thread
@@ -20,6 +20,8 @@ module Searchyll
       self.queue = Queue.new
       self.working = true
       self.timestamp = Time.now
+      self.batch_size = 50
+      self.batch_grow_factor = 0.1
     end
 
     # Public: Add new documents for batch indexing.
@@ -73,7 +75,12 @@ module Searchyll
         http_start do |http|
           loop do
             break unless working?
+            t_start = Time.now
             es_bulk_insert!(http, current_batch)
+            delta = Time.now - t_start
+            # optimally time indexing to Elasticsearch to prevent overload
+            sleep(PACE - delta) if (PACE - delta) > 0
+            batch_size *= (1 + batch_grow_factor) if (delta.to_f / PACE) < 0.5
           end
         end
       end
@@ -99,12 +106,12 @@ module Searchyll
       req = klass.new(path)
       req.content_type = 'application/json'
       req['Accept']    = 'application/json'
-      
-      # Append auth credentials if the exist
+
+      # Append auth credentials if they exist
       if uri.user.present? && uri.password.present?
         req.basic_auth(uri.user, uri.password)
       end
-      
+
       req
     end
 
@@ -124,7 +131,7 @@ module Searchyll
     def current_batch
       count = 0
       batch = []
-      while count < BATCH_SIZE && queue.length > 0
+      while count < batch_size && queue.length > 0
         batch << queue.pop
         count += 1
       end
