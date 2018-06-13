@@ -101,7 +101,7 @@ module Searchyll
       req['Accept']    = 'application/json'
       
       # Append auth credentials if the exist
-      if uri.user.present? && uri.password.present?
+      if !uri.user.empty? && !uri.password.empty?
         req.basic_auth(uri.user, uri.password)
       end
       
