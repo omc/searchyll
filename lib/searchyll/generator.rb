@@ -14,6 +14,12 @@ module Searchyll
       # Gather the configuration options
       configuration = Configuration.new(site)
 
+      # Don't do anything if the Elasticsearch URL is missing
+      if configuration.elasticsearch_url.empty?
+        puts "No Elasticsearch URL present, skipping indexing"
+        return
+      end
+
       # Prepare the indexer
       indexer = Searchyll::Indexer.new(configuration)
       indexer.start
