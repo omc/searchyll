@@ -11,6 +11,8 @@ module Searchyll
     attr_accessor :old_indices
     attr_accessor :queue
     attr_accessor :timestamp
+    attr_accessor :batch_size
+    attr_accessor :batch_grow_factor
     attr_accessor :uri
     attr_accessor :working
 
@@ -51,13 +53,15 @@ module Searchyll
 
     # Prepare our indexing run by creating a new index.
     def prepare_index
+      puts %(       Creating new index with settings and mappings: #{elasticsearch_index_name})
       create_index = http_put("/#{elasticsearch_index_name}")
       create_index.body = {
-        index: {
+        settings: {
           number_of_shards:   configuration.elasticsearch_number_of_shards,
           number_of_replicas: 0,
           refresh_interval:   -1
-        }
+        },
+        mappings: configuration.elasticsearch_mappings
       }.to_json # TODO: index settings
 
       http_start do |http|
@@ -80,7 +84,7 @@ module Searchyll
             delta = Time.now - t_start
             # optimally time indexing to Elasticsearch to prevent overload
             sleep(PACE - delta) if (PACE - delta) > 0
-            batch_size *= (1 + batch_grow_factor) if (delta.to_f / PACE) < 0.5
+            # batch_size *= (1 + batch_grow_factor) if (delta.to_f / PACE) < 0.5
           end
         end
       end
@@ -108,7 +112,7 @@ module Searchyll
       req['Accept']    = 'application/json'
 
       # Append auth credentials if they exist
-      if uri.user.present? && uri.password.present?
+      if uri.user != nil && uri.password != nil
         req.basic_auth(uri.user, uri.password)
       end
 
@@ -174,7 +178,7 @@ module Searchyll
 
       # delete old indices
       cleanup_indices = http_delete("/#{old_indices.join(',')}")
-      puts %(       Old indices: #{old_indices.join(', ')})
+      puts %(        Deleting old indices: #{old_indices.join(', ')})
 
       # run the prepared requests
       http_start do |http|

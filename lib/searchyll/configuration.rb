@@ -10,7 +10,8 @@ module Searchyll
     # Determine a URL for the cluster, or fail with error
     def elasticsearch_url
       ENV['BONSAI_URL'] || ENV['ELASTICSEARCH_URL'] ||
-        ((site.config||{})['elasticsearch']||{})['url'] || false
+        ((site.config||{})['elasticsearch']||{})['url'] ||
+        raise(ArgumentError, "No Elasticsearch URL present, skipping indexing")
     end
 
     # Getter for the number of primary shards
@@ -30,7 +31,7 @@ module Searchyll
 
     # Getter for the default type
     def elasticsearch_default_type
-      site.config['elasticsearch']['default_type'] || 'post'
+      site.config['elasticsearch']['default_type'] || 'doc'
     end
 
     #  Getter for the index mappings

@@ -9,6 +9,7 @@ require "Time"
 
 begin
   indexers = {}
+  # Only index documents if the configuration ES url is present.
   should_index = false
 
   Jekyll::Hooks.register(:site, :pre_render) do |site|
@@ -31,15 +32,15 @@ begin
   # gets random pages like your home page
   Jekyll::Hooks.register :pages, :post_render do |page|
     if should_index
-      # strip html
-      nokogiri_doc = Nokogiri::HTML(page.output)
-
       puts %(        indexing page #{page.url})
 
-      # parse date for Java date type: https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html#date
+      # Strip html.
+      nokogiri_doc = Nokogiri::HTML(page.output)
+
+      # Parse date for Java date type: https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html#date.
       date = page.data["date"] ? Time.parse(page.data["date"].to_s).iso8601 : Time.now.iso8601
 
-      # Prepare doc for elasticsearch
+      # Prepare doc for Elasticsearch.
       page_data = page.data.merge!({
         "date" => date,
         "id" =>   page.name,
@@ -47,6 +48,7 @@ begin
         "text" => nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
       })
 
+      # Send doc to indexer thread.
       indexer = indexers[page.site]
       indexer << page_data
     end
@@ -55,15 +57,15 @@ begin
   # gets both posts and collections
   Jekyll::Hooks.register :documents, :post_render do |document|
     if should_index
-      # strip html
-      nokogiri_doc = Nokogiri::HTML(document.output)
-
       puts %(        indexing document #{document.url})
 
-      # parse date for Java date type: https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html#date
+      # Strip html
+      nokogiri_doc = Nokogiri::HTML(document.output)
+
+      # Parse date for Java date type: https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html#date.
       date = document.data["date"] ? Time.parse(document.data["date"].to_s).iso8601 : Time.now.iso8601
 
-      # Prepare doc for elasticsearch
+      # Prepare doc for Elasticsearch.
       document_data = document.data.merge!({
         "date" => date,
         "id"   => document.id,
@@ -71,6 +73,7 @@ begin
         "text" => nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
       })
 
+      # Send doc to indexer thread.
       indexer = indexers[document.site]
       indexer << document_data
     end
