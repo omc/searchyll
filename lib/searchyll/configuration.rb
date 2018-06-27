@@ -1,3 +1,5 @@
+require 'yaml'
+
 module Searchyll
   class Configuration
     attr_accessor :site
@@ -30,6 +32,11 @@ module Searchyll
     # Getter for the default type
     def elasticsearch_default_type
       site.config['elasticsearch']['default_type'] || 'post'
+    end
+
+    #  Getter for the index mappings
+    def elasticsearch_mappings
+      YAML.load(File.read("_elasticsearch_mappings.yml")) || {}
     end
   end
 end
