@@ -168,6 +168,7 @@ module Searchyll
       add_replication.body = { index: { number_of_replicas: configuration.elasticsearch_number_of_replicas }}.to_json
 
       # hot swap the index into the canonical alias
+      # BUG: aliases aren't updating in ES.
       update_aliases = http_post("/_aliases")
       update_aliases.body = {
         "actions": [
@@ -178,14 +179,18 @@ module Searchyll
 
       # delete old indices
       cleanup_indices = http_delete("/#{old_indices.join(',')}")
-      puts %(        Deleting old indices: #{old_indices.join(', ')})
 
       # run the prepared requests
       http_start do |http|
+        puts %(        Refreshing indices.)
         http.request(refresh)
+        puts %(        Adding repliaction.)
         http.request(add_replication)
+        puts %(        Creating index aliases.)
+        puts update_aliases.body
         http.request(update_aliases)
         if !old_indices.empty?
+          puts %(        Deleting old indices: #{old_indices.join(', ')})
           http.request(cleanup_indices)
         end
       end
