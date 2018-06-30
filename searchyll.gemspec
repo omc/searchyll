@@ -24,7 +24,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "guard-rspec"
 
   spec.add_dependency "jekyll", ">= 3.0"
-  spec.add_dependency "elasticsearch-ruby"
   spec.add_dependency "nokogiri"
 
 end
