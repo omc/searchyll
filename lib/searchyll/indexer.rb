@@ -3,8 +3,17 @@ require 'net/http'
 
 module Searchyll
   class Indexer
+    # Initial size of document batches to send to ES _bulk API
     BATCH_SIZE = 50
 
+    # Grow and shrink the batch size based on how long our bulk calls take
+    # relative to the tempo
+    BATCH_RESIZE_FACTOR = 1.2
+
+    # Requests per minute for updates to ES
+    TEMPO = 94
+
+    attr_accessor :batch_size
     attr_accessor :configuration
     attr_accessor :indexer_thread
     attr_accessor :queue
@@ -12,17 +21,72 @@ module Searchyll
     attr_accessor :uri
     attr_accessor :working
 
+    # Initialize a basic indexer, with a Jekyll site configuration, waiting
+    # to be supplied with documents for indexing.
     def initialize(configuration)
       self.configuration = configuration
-      self.uri = URI(configuration.elasticsearch_url)
-      self.queue = Queue.new
-      self.working = true
-      self.timestamp = Time.now
+      self.uri           = URI(configuration.elasticsearch_url)
+      self.queue         = Queue.new
+      self.working       = true
+      self.timestamp     = Time.now
+      self.batch_size    = BATCH_SIZE
     end
 
     # Public: Add new documents for batch indexing.
     def <<(doc)
       queue << doc
+    end
+
+    # Public: start the indexer and wait for documents to index.
+    def start
+      prepare_index
+
+      self.indexer_thread = Thread.new do
+        http_start do |http|
+          indexer_loop(http)
+        end
+      end
+    end
+
+    # Public: Indicate to the indexer that no new documents are being added.
+    def finish
+      self.working = false
+      indexer_thread.join
+      finalize!
+    end
+
+    private
+
+    def indexer_loop(http)
+      tempo_loop do
+        break unless working?
+        es_bulk_insert!(http, current_batch)
+      end
+    end
+
+    # Run a loop in the tempo specified by TEMPO.
+    def tempo_loop
+      loop do
+        t = Time.now
+
+        # Perform the work required
+        yield
+
+        # Adjust the batch size
+        if (Time.now - t) / (60.0 / TEMPO) < 0.5
+          self.batch_size = (batch_size * BATCH_RESIZE_FACTOR).round
+          puts "Increased batch to #{batch_size}"
+        elsif (Time.now - t) / (60.0 / TEMPO) > 0.9
+          self.batch_size = (batch_size / BATCH_RESIZE_FACTOR).round
+          puts "Decreased batch to #{batch_size}"
+        end
+
+        # Tight loop to sleep through any remaining time in the tempo
+        while (60.0 / TEMPO) - (Time.now - t) > 0
+          sleep [0.1, (60.0 / TEMPO) - (Time.now - t)].min
+          break unless working?
+        end
+      end
     end
 
     # Signal a stop condition for our batch indexing thread.
@@ -63,20 +127,6 @@ module Searchyll
       # TODO: mapping?
     end
 
-    # Public: start the indexer and wait for documents to index.
-    def start
-      prepare_index
-
-      self.indexer_thread = Thread.new do
-        http_start do |http|
-          loop do
-            break unless working?
-            es_bulk_insert!(http, current_batch)
-          end
-        end
-      end
-    end
-
     def http_put(path)
       http_request(Net::HTTP::Put, path)
     end
@@ -98,7 +148,7 @@ module Searchyll
       req.content_type = 'application/json'
       req['Accept']    = 'application/json'
       # Append auth credentials if the exist
-      req.basic_auth(uri.user, uri.password) if uri.user.present? && uri.password.present?
+      req.basic_auth(uri.user, uri.password) if uri.user && uri.password
       req
     end
 
@@ -118,28 +168,22 @@ module Searchyll
     def current_batch
       count = 0
       batch = []
-      while count < BATCH_SIZE && !queue.empty?
+      while count < batch_size && !queue.empty?
         batch << queue.pop
         count += 1
       end
       batch
     end
 
-    # Public: Indicate to the indexer that no new documents are being added.
-    def finish
-      self.working = false
-      indexer_thread.join
-      finalize!
-    end
-
     # List the indices currently in the cluster, caching the call in an ivar
     def old_indices
-      return if defined?(@old_indices)
+      # return if defined?(@old_indices)
       resp = http_start { |h| h.request(http_get('/_cat/indices?h=index')) }
       indices = JSON.parse(resp.body).map { |i| i['index'] }
       indices = indices.select { |i| i =~ /\A#{configuration.elasticsearch_index_base_name}/ }
       indices -= [elasticsearch_index_name]
-      @old_indices = indices
+      # @old_indices = indices
+      indices
     end
 
     # Once documents are done being indexed, finalize the process by adding
@@ -191,7 +235,7 @@ module Searchyll
 
     # delete old indices after a successful reindexing run
     def finalize_cleanup(http)
-      return if old_indices.empty?
+      return if old_indices.nil? || old_indices.empty?
       cleanup_indices = http_delete("/#{old_indices.join(',')}")
       puts %(       Old indices: #{old_indices.join(', ')})
       http.request(cleanup_indices)
