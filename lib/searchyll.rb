@@ -27,11 +27,13 @@ begin
 
     indexer = indexers[document.site]
     indexer << document.data.merge({
-      id:     document.id,
-      url:    document.url,
-      text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " "),
-      html:   document.content,
-      type:   document.collection.label
+      id:          document.id,
+      url:         document.url,
+      text:        nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " "),
+      html:        document.content,
+      type:        document.collection.label,
+      releaseDate: document.date,
+      name:        document.data["title"]
     })
   end
 
