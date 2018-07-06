@@ -11,12 +11,19 @@ begin
 
   Jekyll::Hooks.register(:site, :pre_render) do |site|
     config = Searchyll::Configuration.new(site)
-    indexers[site] = Searchyll::Indexer.new(config)
-    indexers[site].start
+    if config.elasticsearch_url && !config.elasticsearch_url.empty?
+      puts "setting up indexer hook with url #{config.elasticsearch_url.inspect}"
+      indexers[site] = Searchyll::Indexer.new(config)
+      indexers[site].start
+    else
+      puts 'No ElasticSearch URL provided, skipping indexing...'
+    end
   end
 
   Jekyll::Hooks.register :site, :post_render do |site|
-    indexers[site].finish
+    if (indexer = indexers[site])
+      indexer.finish
+    end
   end
 
   # gets random pages like your home page
@@ -26,12 +33,13 @@ begin
 
     # puts %(        indexing page #{page.url})
 
-    indexer = indexers[page.site]
-    indexer << page.data.merge({
-      id:     page.name,
-      url:    page.url,
-      text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
-    })
+    if (indexer = indexers[page.site])
+      indexer << page.data.merge({
+        id:     page.name,
+        url:    page.url,
+        text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
+      })
+    end
   end
 
   # gets both posts and collections
@@ -41,12 +49,13 @@ begin
 
     # puts %(        indexing document #{document.url})
 
-    indexer = indexers[document.site]
-    indexer << document.data.merge({
-      id:     document.id,
-      url:    document.url,
-      text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
-    })
+    if (indexer = indexers[document.site])
+      indexer << document.data.merge({
+        id:     document.id,
+        url:    document.url,
+        text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
+      })
+    end
   end
 
 rescue => e

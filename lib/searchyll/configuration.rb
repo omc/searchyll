@@ -8,7 +8,7 @@ module Searchyll
     # Determine a URL for the cluster, or fail with error
     def elasticsearch_url
       ENV['BONSAI_URL'] || ENV['ELASTICSEARCH_URL'] ||
-        ((site.config||{})['elasticsearch']||{})['url'].to_s
+        ((site.config||{})['elasticsearch']||{})['url']
     end
 
     # Getter for the number of primary shards
