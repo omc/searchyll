@@ -51,10 +51,243 @@ module Searchyll
     def prepare_index
       create_index = http_put("/#{elasticsearch_index_name}")
       create_index.body = {
-        index: {
-          number_of_shards:   configuration.elasticsearch_number_of_shards,
+        settings: {
+          number_of_shards: configuration.elasticsearch_number_of_shards,
           number_of_replicas: 0,
-          refresh_interval:   -1
+          refresh_interval: -1,
+          analysis: {
+            analyzer: {
+              suggest_analyzer: {
+                tokenizer: "suggest_tokenizer",
+                filter: [
+                  "lowercase"
+                ],
+                char_filter:  [ "html_strip" ]
+              },
+              evolutionAnalyzer: {
+                tokenizer: "standard",
+                filter: [
+                  "standard",
+                  "lowercase",
+                  "custom_stop",
+                  "custom_shingle"
+                ],
+                char_filter:  [ "html_strip" ]
+              }
+            },
+            filter: {
+              custom_stop: {
+                type: "stop",
+                stopwords: "_italian_"
+              },
+              custom_shingle: {
+                type: "shingle",
+                min_shingle_size: 2,
+                max_shingle_size: 3
+              }
+            },
+            tokenizer: {
+              suggest_tokenizer: {
+                type: "ngram",
+                min_gram: 2,
+                max_gram: 10,
+                token_chars: ["letter", "digit"]
+              }
+            }
+          }          
+        },
+        mappings: {
+          post: {
+            properties: {
+              author: {
+                type: "text",
+                fields: {
+                  keyword: {
+                    type: "keyword",
+                    ignore_above: 256
+                  }
+                }
+              },
+              categories: {
+                type: "text",
+                fields: {
+                  keyword: {
+                    type: "keyword",
+                    ignore_above: 256
+                  }
+                }
+              },
+              comingsoon: {
+                type: "boolean"
+              },
+              releaseDate: {
+                type: "date",
+                format: "yyyy-MM-dd HH:mm:ss Z"
+              },
+              description: {
+                type: "text",
+                fields: {
+                  ngram: {
+                    type: "text",
+                    analyzer: "evolutionAnalyzer"
+                  }
+                }
+              },
+              draft: {
+                type: "boolean"
+              },
+              excerpt: {
+                type: "text"
+              },
+              ext: {
+                type: "text",
+                index: false
+              },
+              github_team: {
+                type: "text",
+                fields: {
+                  keyword: {
+                    type: "keyword",
+                    ignore_above: 256
+                  }
+                }
+              },
+              highlight: {
+                type: "boolean"
+              },
+              html: {
+                type: "text",
+                fields: {
+                  ngram: {
+                    type: "text",
+                    analyzer: "evolutionAnalyzer"
+                  }
+                }
+              },
+              id: {
+                type: "text",
+                fields: {
+                  keyword: {
+                    type: "keyword",
+                    ignore_above: 256
+                  }
+                }
+              },
+              image: {
+                type: "text",
+                index: false
+              },
+              lang: {
+                type: "keyword"
+              },
+              layout: {
+                type: "text",
+                fields: {
+                  keyword: {
+                    type: "keyword",
+                    ignore_above: 256
+                  }
+                }
+              },
+              logo: {
+                type: "text",
+                index: false
+              },
+              maintainers: {
+                type: "keyword"
+              },
+              order: {
+                type: "long"
+              },
+              payoff: {
+                type: "text"
+              },
+              permalink: {
+                type: "text",
+                index: false
+              },
+              pills: {
+                properties: {
+                  link: {
+                    type: "text",
+                    index: false
+                  },
+                  title: {
+                    type: "text",
+                    index: false
+                  }
+                }
+              },
+              redirect_from: {
+                type: "text",
+                index: false
+              },
+              slug: {
+                type: "keyword"
+              },
+              socials: {
+                properties: {
+                  icon: {
+                    type: "text",
+                    index: false
+                  },
+                  link: {
+                    type: "text",
+                    index: false
+                  },
+                  name: {
+                    type: "text"
+                  }
+                }
+              },
+              subtitle: {
+                type: "text",
+                fields: {
+                  ngram: {
+                    type: "text",
+                    analyzer: "evolutionAnalyzer"
+                  }
+                }
+              },
+              tags: {
+                type: "keyword"
+              },
+              text: {
+                type: "text"
+              },
+              title: {
+                type: "text",
+                fields: {
+                  ngram: {
+                    type: "text",
+                    analyzer: "evolutionAnalyzer"
+                  },
+                  sort: { type: "keyword", ignore_above: 256 }
+                }
+              },
+              name: {
+                type: "text",
+                index: false,
+                fields: {
+                  sort: { type: "keyword", ignore_above: 256 }
+                }
+              },
+              toc: {
+                type: "boolean"
+              },
+              top_projects_link: {
+                type: "text",
+                index: false
+              },
+              type: {
+                type: "keyword"
+              },
+              url: {
+                type: "text",
+                index: false
+              }
+            }
+          }
         }
       }.to_json # TODO: index settings
 
