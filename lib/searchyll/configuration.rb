@@ -27,6 +27,11 @@ module Searchyll
       site.config['elasticsearch']['index_name'] || "jekyll"
     end
 
+    # Getter for the alias name
+    def elasticsearch_alias_name
+      site.config['elasticsearch']['alias_name'] || "jekyll"
+    end
+
     # Getter for the default type
     def elasticsearch_default_type
       site.config['elasticsearch']['default_type'] || 'post'

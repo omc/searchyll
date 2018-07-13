@@ -160,8 +160,8 @@ module Searchyll
       update_aliases = http_post("/_aliases")
       update_aliases.body = {
         "actions": [
-          { "remove": { "index": old_indices.join(','), "alias": configuration.elasticsearch_index_base_name }},
-          { "add":    { "index": elasticsearch_index_name, "alias": configuration.elasticsearch_index_base_name }}
+          { "remove": { "index": "#{configuration.elasticsearch_index_base_name}*", "alias": configuration.elasticsearch_alias_name }},
+          { "add":    { "index": elasticsearch_index_name, "alias": configuration.elasticsearch_alias_name }}
         ]
       }.to_json
 
