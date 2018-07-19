@@ -57,41 +57,24 @@ module Searchyll
           refresh_interval: -1,
           analysis: {
             analyzer: {
-              suggest_analyzer: {
-                tokenizer: "suggest_tokenizer",
+              autocomplete: {
+                tokenizer: "autocomplete",
                 filter: [
                   "lowercase"
-                ],
-                char_filter:  [ "html_strip" ]
+                ]
               },
-              evolutionAnalyzer: {
-                tokenizer: "standard",
-                filter: [
-                  "standard",
-                  "lowercase",
-                  "custom_stop",
-                  "custom_shingle"
-                ],
-                char_filter:  [ "html_strip" ]
-              }
-            },
-            filter: {
-              custom_stop: {
-                type: "stop",
-                stopwords: "_italian_"
-              },
-              custom_shingle: {
-                type: "shingle",
-                min_shingle_size: 2,
-                max_shingle_size: 3
+              autocomplete_search: {
+                tokenizer: "lowercase"
               }
             },
             tokenizer: {
-              suggest_tokenizer: {
-                type: "ngram",
-                min_gram: 2,
-                max_gram: 10,
-                token_chars: ["letter", "digit"]
+              autocomplete: {
+                type: "edge_ngram",
+                min_gram: 3,
+                max_gram: 30,
+                token_chars: [
+                  letter
+                ]
               }
             }
           }          
@@ -126,12 +109,8 @@ module Searchyll
               },
               description: {
                 type: "text",
-                fields: {
-                  ngram: {
-                    type: "text",
-                    analyzer: "evolutionAnalyzer"
-                  }
-                }
+                analyzer: "autocomplete",
+                search_analyzer: "autocomplete_search"
               },
               draft: {
                 type: "boolean"
@@ -157,12 +136,8 @@ module Searchyll
               },
               html: {
                 type: "text",
-                fields: {
-                  ngram: {
-                    type: "text",
-                    analyzer: "evolutionAnalyzer"
-                  }
-                }
+                analyzer: "autocomplete",
+                search_analyzer: "autocomplete_search"
               },
               id: {
                 type: "text",
@@ -242,12 +217,8 @@ module Searchyll
               },
               subtitle: {
                 type: "text",
-                fields: {
-                  ngram: {
-                    type: "text",
-                    analyzer: "evolutionAnalyzer"
-                  }
-                }
+                analyzer: "autocomplete",
+                search_analyzer: "autocomplete_search"
               },
               tags: {
                 type: "keyword"
@@ -257,13 +228,8 @@ module Searchyll
               },
               title: {
                 type: "text",
-                fields: {
-                  ngram: {
-                    type: "text",
-                    analyzer: "evolutionAnalyzer"
-                  },
-                  sort: { type: "keyword", ignore_above: 256 }
-                }
+                analyzer: "autocomplete",
+                search_analyzer: "autocomplete_search"
               },
               name: {
                 type: "text",
