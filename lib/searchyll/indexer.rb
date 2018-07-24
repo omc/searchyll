@@ -73,7 +73,7 @@ module Searchyll
                 min_gram: 3,
                 max_gram: 30,
                 token_chars: [
-                  letter
+                  "letter"
                 ]
               }
             }
