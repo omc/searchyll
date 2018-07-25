@@ -233,10 +233,8 @@ module Searchyll
               },
               name: {
                 type: "text",
-                index: false,
-                fields: {
-                  sort: { type: "keyword", ignore_above: 256 }
-                }
+                analyzer: "autocomplete",
+                search_analyzer: "autocomplete_search"
               },
               toc: {
                 type: "boolean"
