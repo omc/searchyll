@@ -30,15 +30,15 @@ begin
   Jekyll::Hooks.register :pages, :post_render do |page|
     # strip html
     nokogiri_doc = Nokogiri::HTML(page.output)
-
-    # puts %(        indexing page #{page.url})
-
-    if (indexer = indexers[page.site])
-      indexer << page.data.merge({
-        id:     page.name,
-        url:    page.url,
-        text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
-      })
+    if page.data["searchyll_index"] == true
+      if (indexer = indexers[page.site])
+        puts %(        indexing page #{page.url})
+        indexer << page.data.merge({
+          id:     page.name,
+          url:    page.url,
+          text:   nokogiri_doc.xpath("//*[@index]//text()").to_s.gsub(/\s+/, " ")
+        })
+      end
     end
   end
 
@@ -47,14 +47,15 @@ begin
     # strip html
     nokogiri_doc = Nokogiri::HTML(document.output)
 
-    # puts %(        indexing document #{document.url})
-
-    if (indexer = indexers[document.site])
-      indexer << document.data.merge({
-        id:     document.id,
-        url:    document.url,
-        text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
-      })
+    if document.data["searchyll_index"] == true
+      if (indexer = indexers[document.site])
+        puts %(        indexing document #{document.url})
+        indexer << document.data.merge({
+          id:     document.id,
+          url:    document.url,
+          text:   nokogiri_doc.xpath("//*[@index]//text()").to_s.gsub(/\s+/, " ")
+        })
+      end
     end
   end
 
