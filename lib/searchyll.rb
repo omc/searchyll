@@ -35,7 +35,7 @@ begin
 
     if (indexer = indexers[page.site])
       indexer << page.data.merge({
-        id:     page.title,
+        id:     page.name,
         url:    page.url,
         text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
       })
@@ -56,16 +56,6 @@ begin
         text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
       })
     end
-    indexer = indexers[document.site]
-    indexer << document.data.merge({
-      id:          document.id,
-      url:         document.url,
-      text:        nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " "),
-      html:        document.content,
-      type:        document.collection.label,
-      releaseDate: document.date,
-      name:        document.data["title"]
-    })
   end
 
 rescue => e
