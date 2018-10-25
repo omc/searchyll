@@ -19,13 +19,6 @@
           }
         }
       },
-      "comingsoon": {
-        "type": "boolean"
-      },
-      "releaseDate": {
-        "type": "date",
-        "format": "yyyy-MM-dd HH:mm:ss Z"
-      },
       "description": {
         "type": "text",
         "analyzer": "autocomplete",
@@ -36,22 +29,6 @@
       },
       "excerpt": {
         "type": "text"
-      },
-      "ext": {
-        "type": "text",
-        "index": false
-      },
-      "github_team": {
-        "type": "text",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
-      },
-      "highlight": {
-        "type": "boolean"
       },
       "html": {
         "type": "text",
@@ -83,34 +60,9 @@
           }
         }
       },
-      "logo": {
-        "type": "text",
-        "index": false
-      },
-      "maintainers": {
-        "type": "keyword"
-      },
-      "order": {
-        "type": "long"
-      },
-      "payoff": {
-        "type": "text"
-      },
       "permalink": {
         "type": "text",
         "index": false
-      },
-      "pills": {
-        "properties": {
-          "link": {
-            "type": "text",
-            "index": false
-          },
-          "title": {
-            "type": "text",
-            "index": false
-          }
-        }
       },
       "redirect_from": {
         "type": "text",
@@ -118,26 +70,6 @@
       },
       "slug": {
         "type": "keyword"
-      },
-      "socials": {
-        "properties": {
-          "icon": {
-            "type": "text",
-            "index": false
-          },
-          "link": {
-            "type": "text",
-            "index": false
-          },
-          "name": {
-            "type": "text"
-          }
-        }
-      },
-      "subtitle": {
-        "type": "text",
-        "analyzer": "autocomplete",
-        "search_analyzer": "autocomplete_search"
       },
       "tags": {
         "type": "keyword"

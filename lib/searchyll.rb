@@ -43,11 +43,11 @@ begin
   end
 
   # gets both posts and collections
-  Jekyll::Hooks.register [:documents], :post_render do |document|
+  Jekyll::Hooks.register :documents, :post_render do |document|
     # strip html
     nokogiri_doc = Nokogiri::HTML(document.output)
 
-    puts %(        indexing #{document.collection.label} #{document.data['title']})
+    # puts %(        indexing document #{document.url})
 
     if (indexer = indexers[document.site])
       indexer << document.data.merge({

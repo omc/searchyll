@@ -5,6 +5,8 @@ module Searchyll
   class Indexer
     # Mapping fields JSON file path
     MAPPING_FILE_PATH = './mapping/fields.json'
+    # Analysis fields JSON file path
+    ANALYSIS_FILE_PATH = './mapping/analysis.json'
     # Initial size of document batches to send to ES _bulk API
     BATCH_SIZE = 50
 
@@ -118,47 +120,33 @@ module Searchyll
       else
         mapping_fields = false
       end
+      if File.exist?(ANALYSIS_FILE_PATH)
+        analysis_fields = JSON.parse(File.read(ANALYSIS_FILE_PATH))
+      else
+        analysis_fields = false
+      end
       create_index = http_put("/#{elasticsearch_index_name}")
       create_index.body = {
         settings: {
           number_of_shards: configuration.elasticsearch_number_of_shards,
           number_of_replicas: 0,
-          refresh_interval: -1,
-          analysis: {
-            analyzer: {
-              autocomplete: {
-                tokenizer: "autocomplete",
-                filter: [
-                  "lowercase"
-                ]
-              },
-              autocomplete_search: {
-                tokenizer: "lowercase"
-              }
-            },
-            tokenizer: {
-              autocomplete: {
-                type: "edge_ngram",
-                min_gram: 3,
-                max_gram: 30,
-                token_chars: [
-                  "letter"
-                ]
-              }
-            }
-          }
+          refresh_interval: -1
         }
-      }.to_json # TODO: index settings
+      }.to_json
+      
       # Add mapping fields to the index
       if mapping_fields
         create_index.mappings = mapping_fields
       end
 
+      # Add analysis fields to the index
+      if analysis_fields
+        create_index.analysis = analysis_fields
+      end
+
       http_start do |http|
         http.request(create_index)
       end
-
-      # TODO: mapping?
     end
 
     def http_put(path)
