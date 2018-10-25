@@ -1,23 +1,25 @@
-analysis: {
-  analyzer: {
-    autocomplete: {
-      tokenizer: "autocomplete",
-      filter: [
-        "lowercase"
-      ]
+{
+  "analysis": {
+    "analyzer": {
+      "autocomplete": {
+        "tokenizer": "autocomplete",
+        "filter": [
+          "lowercase"
+        ]
+      },
+      "autocomplete_search": {
+        "tokenizer": "lowercase"
+      }
     },
-    autocomplete_search: {
-      tokenizer: "lowercase"
-    }
-  },
-  tokenizer: {
-    autocomplete: {
-      type: "edge_ngram",
-      min_gram: 3,
-      max_gram: 30,
-      token_chars: [
-        "letter"
-      ]
+    "tokenizer": {
+      "autocomplete": {
+        "type": "edge_ngram",
+        "min_gram": 3,
+        "max_gram": 30,
+        "token_chars": [
+          "letter"
+        ]
+      }
     }
   }
 }
