@@ -1,3 +1,3 @@
 module Searchyll
-  VERSION = "0.10.0"
+  VERSION = "0.10.2"
 end

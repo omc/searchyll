@@ -1,0 +1,174 @@
+{
+  "post": {
+    "properties": {
+      "author": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "categories": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "comingsoon": {
+        "type": "boolean"
+      },
+      "releaseDate": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss Z"
+      },
+      "description": {
+        "type": "text",
+        "analyzer": "autocomplete",
+        "search_analyzer": "autocomplete_search"
+      },
+      "draft": {
+        "type": "boolean"
+      },
+      "excerpt": {
+        "type": "text"
+      },
+      "ext": {
+        "type": "text",
+        "index": false
+      },
+      "github_team": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "highlight": {
+        "type": "boolean"
+      },
+      "html": {
+        "type": "text",
+        "analyzer": "autocomplete",
+        "search_analyzer": "autocomplete_search"
+      },
+      "id": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "image": {
+        "type": "text",
+        "index": false
+      },
+      "lang": {
+        "type": "keyword"
+      },
+      "layout": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "logo": {
+        "type": "text",
+        "index": false
+      },
+      "maintainers": {
+        "type": "keyword"
+      },
+      "order": {
+        "type": "long"
+      },
+      "payoff": {
+        "type": "text"
+      },
+      "permalink": {
+        "type": "text",
+        "index": false
+      },
+      "pills": {
+        "properties": {
+          "link": {
+            "type": "text",
+            "index": false
+          },
+          "title": {
+            "type": "text",
+            "index": false
+          }
+        }
+      },
+      "redirect_from": {
+        "type": "text",
+        "index": false
+      },
+      "slug": {
+        "type": "keyword"
+      },
+      "socials": {
+        "properties": {
+          "icon": {
+            "type": "text",
+            "index": false
+          },
+          "link": {
+            "type": "text",
+            "index": false
+          },
+          "name": {
+            "type": "text"
+          }
+        }
+      },
+      "subtitle": {
+        "type": "text",
+        "analyzer": "autocomplete",
+        "search_analyzer": "autocomplete_search"
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "text": {
+        "type": "text"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "autocomplete",
+        "search_analyzer": "autocomplete_search"
+      },
+      "name": {
+        "type": "text",
+        "analyzer": "autocomplete",
+        "search_analyzer": "autocomplete_search"
+      },
+      "toc": {
+        "type": "boolean"
+      },
+      "top_projects_link": {
+        "type": "text",
+        "index": false
+      },
+      "type": {
+        "type": "keyword"
+      },
+      "url": {
+        "type": "text",
+        "index": false
+      }
+    }
+  }
+}
