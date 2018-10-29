@@ -1,12 +1,9 @@
 require 'json'
 require 'net/http'
+require 'yaml'
 
 module Searchyll
   class Indexer
-    # Mapping fields JSON file path
-    MAPPING_FILE_PATH = './mapping/fields.json'
-    # Analysis fields JSON file path
-    ANALYSIS_FILE_PATH = './mapping/analysis.json'
     # Initial size of document batches to send to ES _bulk API
     BATCH_SIZE = 50
 
@@ -34,6 +31,10 @@ module Searchyll
       self.working       = true
       self.timestamp     = Time.now
       self.batch_size    = BATCH_SIZE
+      # Mapping fields JSON file path
+      @@mapping_file_path = configuration.elasticsearch_mapping_fields
+      # Analysis fields JSON file path
+      @@analysis_file_path = configuration.elasticsearch_analysis_fields
     end
 
     # Public: Add new documents for batch indexing.
@@ -115,13 +116,13 @@ module Searchyll
 
     # Prepare our indexing run by creating a new index.
     def prepare_index
-      if File.exist?(MAPPING_FILE_PATHS)
-        mapping_fields = JSON.parse(File.read(MAPPING_FILE_PATHS))
+      if File.exist?(@@mapping_file_path)
+        mapping_fields = JSON.parse(File.read(@@mapping_file_path))
       else
         mapping_fields = false
       end
-      if File.exist?(ANALYSIS_FILE_PATH)
-        analysis_fields = JSON.parse(File.read(ANALYSIS_FILE_PATH))
+      if File.exist?(@@analysis_file_path)
+        analysis_fields = JSON.parse(File.read(@@analysis_file_path))
       else
         analysis_fields = false
       end
@@ -136,11 +137,13 @@ module Searchyll
       
       # Add mapping fields to the index
       if mapping_fields
+        create_index.class.instance_eval('attr_accessor :mappings')
         create_index.mappings = mapping_fields
       end
 
       # Add analysis fields to the index
       if analysis_fields
+        create_index.class.instance_eval('attr_accessor :analysis')
         create_index.analysis = analysis_fields
       end
 

@@ -35,5 +35,14 @@ module Searchyll
     def elasticsearch_default_type
       site.config['elasticsearch']['default_type'] || 'post'
     end
+
+    # Getter for the mapping fields file's path value
+    def elasticsearch_analysis_fields
+      site.config['elasticsearch']['analysis_file_path'] || './mapping/analysis.json'
+    end
+    # Getter for the analysis fields file's path value
+    def elasticsearch_mapping_fields
+      site.config['elasticsearch']['mapping_file_path'] || './mapping/mapping.json'
+    end
   end
 end
