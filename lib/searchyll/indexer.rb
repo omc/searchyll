@@ -116,12 +116,12 @@ module Searchyll
 
     # Prepare our indexing run by creating a new index.
     def prepare_index
-      if File.exist?(@@mapping_file_path)
+      if !@@mapping_file_path.nil? && File.exist?(@@mapping_file_path)
         mapping_fields = JSON.parse(File.read(@@mapping_file_path))
       else
         mapping_fields = false
       end
-      if File.exist?(@@analysis_file_path)
+      if !@@analysis_file_path.nil? && File.exist?(@@analysis_file_path)
         analysis_fields = JSON.parse(File.read(@@analysis_file_path))
       else
         analysis_fields = false

@@ -38,11 +38,11 @@ module Searchyll
 
     # Getter for the mapping fields file's path value
     def elasticsearch_analysis_fields
-      site.config['elasticsearch']['analysis_file_path'] || './mapping/analysis.json'
+      site.config['elasticsearch']['analysis_file_path'] || nil
     end
     # Getter for the analysis fields file's path value
     def elasticsearch_mapping_fields
-      site.config['elasticsearch']['mapping_file_path'] || './mapping/mapping.json'
+      site.config['elasticsearch']['mapping_file_path'] || nil
     end
   end
 end
