@@ -31,6 +31,11 @@ elasticsearch:
   number_of_replicas: 1         # Optional. Default is 1 replica.
   index_name: "jekyll"          # Optional. Default is "jekyll".
   default_type: "post"          # Optional. Default type is "post".
+  mapping_file_path: './path/mapping.json'   # Optional. Default nil. 
+                                             #   Informs searchyll about (JSON) mapping fields file's path. 
+                                             #   Ex: if value is './mapping/fields.js' searchyll will searches if exists a file into /lib/searchyll/mapping named fields.json and then passes it to the indexer.
+  analysis_file_path: './path/analysis.json' # Optional. Default nil.
+                                             #   As above: if given (JSON) analysis fields file's path exists it will be passed to the indexer.  
 ```
 
 ## Development
