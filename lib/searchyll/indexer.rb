@@ -111,20 +111,23 @@ module Searchyll
 
     # Prepare our indexing run by creating a new index.
     def prepare_index
-      create_index = http_put("/#{elasticsearch_index_name}")
-      create_index.body = {
-        index: {
-          number_of_shards:   configuration.elasticsearch_number_of_shards,
-          number_of_replicas: 0,
-          refresh_interval:   -1
-        }
-      }.to_json # TODO: index settings
+      create_index_request = http_put("/#{elasticsearch_index_name}")
+      payload = {
+        settings: configuration.elasticsearch_settings,
+      }
 
-      http_start do |http|
-        http.request(create_index)
+      if configuration.elasticsearch_mapping
+        payload['mappings'] = {}
+        payload['mappings'].store(configuration.elasticsearch_default_type, configuration.elasticsearch_mapping)
       end
 
-      # TODO: mapping?
+      json_payload = payload.to_json
+
+      create_index_request.body = json_payload
+
+      http_start do |http|
+        http.request(create_index_request)
+      end
     end
 
     def http_put(path)
