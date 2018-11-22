@@ -1,6 +1,7 @@
 module Searchyll
   class Configuration
     attr_accessor :site
+
     def initialize(site)
       self.site = site
     end
@@ -9,6 +10,38 @@ module Searchyll
     def elasticsearch_url
       ENV['BONSAI_URL'] || ENV['ELASTICSEARCH_URL'] ||
         ((site.config||{})['elasticsearch']||{})['url']
+    end
+
+    def valid?
+      elasticsearch_url && !elasticsearch_url.empty? && elasticsearch_url.start_with?('http')
+    end
+
+    def reasons
+      reasons = []
+      if elasticsearch_url && elasticsearch_url.empty?
+        reasons << 'No Elasticsearch url configured'
+        reasons << '  Looked in ENV[BONSAI_URL]'
+        reasons << '  Looked in ENV[ELASTICSEARCH_URL]'
+        reasons << '  Looked in _config.elasticsearch.url'
+      elsif ! elasticsearch_url.start_with? 'http'
+        reasons << "Elasticsearch url must start with 'http' or 'https'"
+        reasons << "  Current Value: #{elasticsearch_url}"
+        reasons << "  Current Source: #{elasticsearch_url_source}"
+      end
+
+      reasons
+    end
+
+    def elasticsearch_url_source
+      if ENV['BONSAI_URL']
+        'ENV[BONSAI_URL]'
+      elsif ENV['ELASTICSEARCH_URL']
+        'ENV[ELASTICSEARCH_URL]'
+      elsif ((site.config||{})['elasticsearch']||{})['url']
+        'CONFIG'
+      else
+        'NOT FOUND'
+      end
     end
 
     # Getter for the number of primary shards

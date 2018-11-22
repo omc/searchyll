@@ -11,12 +11,15 @@ begin
 
   Jekyll::Hooks.register(:site, :pre_render) do |site|
     config = Searchyll::Configuration.new(site)
-    if config.elasticsearch_url && !config.elasticsearch_url.empty?
+    if config.valid?
       puts "setting up indexer hook with url #{config.elasticsearch_url.inspect}"
       indexers[site] = Searchyll::Indexer.new(config)
       indexers[site].start
     else
-      puts 'No ElasticSearch URL provided, skipping indexing...'
+      puts 'Invalid Elasticsearch configuration provided, skipping indexing...'
+      config.reasons.each do |r|
+        puts "  #{r}"
+      end
     end
   end
 
