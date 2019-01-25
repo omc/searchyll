@@ -18,12 +18,13 @@ module Searchyll
 
     def reasons
       reasons = []
-      if elasticsearch_url && elasticsearch_url.empty?
+
+      if elasticsearch_url.nil? || elasticsearch_url.empty?
         reasons << 'No Elasticsearch url configured'
         reasons << '  Looked in ENV[BONSAI_URL]'
         reasons << '  Looked in ENV[ELASTICSEARCH_URL]'
         reasons << '  Looked in _config.elasticsearch.url'
-      elsif ! elasticsearch_url.start_with? 'http'
+      elsif elasticsearch_url && ! elasticsearch_url.start_with?('http')
         reasons << "Elasticsearch url must start with 'http' or 'https'"
         reasons << "  Current Value: #{elasticsearch_url}"
         reasons << "  Current Source: #{elasticsearch_url_source}"
@@ -46,12 +47,16 @@ module Searchyll
 
     # Getter for the number of primary shards
     def elasticsearch_number_of_shards
-      site.config['elasticsearch']['number_of_shards'] || 1
+      settings = elasticsearch_settings
+
+      settings['index']['number_of_shards']
     end
 
     # Getter for the number of replicas
     def elasticsearch_number_of_replicas
-      site.config['elasticsearch']['number_of_replicas'] || 1
+      settings = elasticsearch_settings
+
+      settings['index']['number_of_replicas']
     end
 
     # Getter for the index name
@@ -62,6 +67,48 @@ module Searchyll
     # Getter for the default type
     def elasticsearch_default_type
       site.config['elasticsearch']['default_type'] || 'post'
+    end
+
+    # Getter for es mapping
+    def elasticsearch_mapping_path
+      site.config['elasticsearch']['custom_mappings']
+    end
+
+    # Getter for es settings
+    def elasticsearch_settings_path
+      site.config['elasticsearch']['custom_settings']
+    end
+
+    def elasticsearch_mapping
+        read_yaml(elasticsearch_mapping_path, nil)
+    end
+
+    def elasticsearch_settings
+      shards = site.config['elasticsearch']['number_of_shards'] || 1
+      replicas = site.config['elasticsearch']['number_of_replicas'] || 1
+      read_yaml(elasticsearch_settings_path, {
+        'index' => {
+          'number_of_shards'   => shards,
+          'number_of_replicas' => replicas,
+          'refresh_interval'   => -1
+        }
+      })
+    end
+
+    def read_yaml(path, default)
+      if path
+        joined_path = File.join(@site.source, path)
+        expanded_path = File.expand_path(joined_path)
+        if File.exist?(expanded_path)
+          content = File.read(expanded_path)
+          # SafeYAML comes with Jekyll
+          SafeYAML.load(content)
+        else
+          default
+        end
+      else
+        default
+      end
     end
   end
 end

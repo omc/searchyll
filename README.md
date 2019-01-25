@@ -22,15 +22,42 @@ gems:
 
 ## Configuration
 
-```
+```yaml
 elasticsearch:
-  url: "http://localhost:9200/" # Required. Supports auth and SSL: https://user:pass@someurl.com
-                                # Can also read URLs stored in environment variable named
-                                # BONSAI_URL and ELASTICSEARCH_URL.
-  number_of_shards: 1           # Optional. Default is 1 primary shard.
-  number_of_replicas: 1         # Optional. Default is 1 replica.
-  index_name: "jekyll"          # Optional. Default is "jekyll".
-  default_type: "post"          # Optional. Default type is "post".
+  url: "http://localhost:9200/"     # Required. Supports auth and SSL: https://user:pass@someurl.com
+                                    # Can also read URLs stored in environment variable named
+                                    # BONSAI_URL and ELASTICSEARCH_URL.
+  number_of_shards: 1               # Optional. Default is 1 primary shard.
+  number_of_replicas: 1             # Optional. Default is 1 replica.
+  index_name: "jekyll"              # Optional. Default is "jekyll".
+  default_type: "post"              # Optional. Default type is "post".
+  custom_settings: _es_settings.yml # Optional. No default. Relative to your src folder
+  custom_mappings: _es_mappings.yml # Optional. No default. Relative to your src folder
+```
+
+### Custom Settings File Example
+
+It should be written to be plugged into the `settings` slot of a [create index](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html) call
+
+```yaml
+analysis:
+  analyzer:
+    stop_analyzer:
+      type: stop
+      stopwords: _english_
+index:
+  number_of_shards: 1
+  number_of_replicas: 0
+```
+
+### Custom Mappings File Example
+
+It should be written to be plugged into the `mappings.[type]` slot of a [create index](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html) call
+
+```yaml
+properties:
+  field1:
+    type: text
 ```
 
 ## Development
