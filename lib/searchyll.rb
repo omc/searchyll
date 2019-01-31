@@ -12,7 +12,7 @@ begin
   Jekyll::Hooks.register(:site, :pre_render) do |site|
     config = Searchyll::Configuration.new(site)
     if config.valid?
-      puts "setting up indexer hook with url #{config.elasticsearch_url.inspect}"
+      puts "setting up indexer hook"
       indexers[site] = Searchyll::Indexer.new(config)
       indexers[site].start
     else
