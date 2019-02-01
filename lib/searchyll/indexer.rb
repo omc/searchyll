@@ -163,7 +163,8 @@ module Searchyll
       bulk_insert.body = batch.map do |doc|
         [{ index: {} }.to_json, doc.to_json].join("\n")
       end.join("\n") + "\n"
-      http.request(bulk_insert)
+      res = http.request(bulk_insert)
+      $stderr.puts "Elasticsearch returned an error when performing bulk insert: " + res.message if !res.kind_of?(Net::HTTPSuccess)
     end
 
     # Fetch a batch of documents from the queue. Returns a maximum of BATCH_SIZE
