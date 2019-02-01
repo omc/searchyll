@@ -38,9 +38,9 @@ begin
 
     if (indexer = indexers[page.site])
       indexer << ({
-        "id":     page.name,
-        "url":    page.url,
-        "text":   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
+        "id"   => page.name,
+        "url"  => page.url,
+        "text" => nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
       }).merge(page.data)
     end
   end
@@ -54,9 +54,9 @@ begin
 
     if (indexer = indexers[document.site])
       indexer << ({
-        "id":     document.id,
-        "url":    document.url,
-        "text":   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
+        "id"   =>  document.id,
+        "url"  =>  document.url,
+        "text" =>  nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
       }).merge(document.data)
     end
   end
