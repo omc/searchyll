@@ -159,10 +159,12 @@ module Searchyll
     # using its Bulk Update API.
     # https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
     def es_bulk_insert!(http, batch)
+      return if batch.empty?
       bulk_insert = http_post("/#{elasticsearch_index_name}/#{configuration.elasticsearch_default_type}/_bulk")
+      bulk_insert.content_type = 'application/x-ndjson'
       bulk_insert.body = batch.map do |doc|
         [{ index: {} }.to_json, doc.to_json].join("\n")
-      end.join("\n") + "\n"
+      end.force_encoding('ascii-8bit').join("\n") + "\n"
       http.request(bulk_insert)
     end
 
