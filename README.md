@@ -33,6 +33,8 @@ elasticsearch:
   default_type: "post"              # Optional. Default type is "post".
   custom_settings: _es_settings.yml # Optional. No default. Relative to your src folder
   custom_mappings: _es_mappings.yml # Optional. No default. Relative to your src folder
+  ignore:                           # Optional. No default.
+    - /news/*
 ```
 
 ### Custom Settings File Example
