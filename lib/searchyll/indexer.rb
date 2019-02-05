@@ -237,7 +237,11 @@ module Searchyll
           } }
         ]
       }.to_json
-      http.request(update_aliases)
+      res = http.request(update_aliases)
+      if !res.kind_of?(Net::HTTPSuccess)
+        $stderr.puts "Elasticsearch returned an error when updating aliases: " + res.message + " " + res.body
+        exit
+      end
     end
 
     # delete old indices after a successful reindexing run
