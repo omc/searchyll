@@ -163,7 +163,11 @@ module Searchyll
       bulk_insert.body = batch.map do |doc|
         [{ index: {} }.to_json, doc.to_json].join("\n")
       end.join("\n") + "\n"
-      http.request(bulk_insert)
+      res = http.request(bulk_insert)
+      if !res.kind_of?(Net::HTTPSuccess)
+        $stderr.puts "Elasticsearch returned an error when performing bulk insert: " + res.message + " " + res.body
+        exit
+      end
     end
 
     # Fetch a batch of documents from the queue. Returns a maximum of BATCH_SIZE
@@ -233,7 +237,11 @@ module Searchyll
           } }
         ]
       }.to_json
-      http.request(update_aliases)
+      res = http.request(update_aliases)
+      if !res.kind_of?(Net::HTTPSuccess)
+        $stderr.puts "Elasticsearch returned an error when updating aliases: " + res.message + " " + res.body
+        exit
+      end
     end
 
     # delete old indices after a successful reindexing run
