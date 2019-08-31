@@ -37,11 +37,11 @@ begin
     # puts %(        indexing page #{page.url})
 
     if (indexer = indexers[page.site])
-      indexer << page.data.merge({
-        id:     page.name,
-        url:    page.url,
-        text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
-      })
+      indexer << ({
+        "id"   => page.name,
+        "url"  => page.url,
+        "text" => nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
+      }).merge(page.data)
     end
   end
 
@@ -53,11 +53,11 @@ begin
     # puts %(        indexing document #{document.url})
 
     if (indexer = indexers[document.site])
-      indexer << document.data.merge({
-        id:     document.id,
-        url:    document.url,
-        text:   nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
-      })
+      indexer << ({
+        "id"   =>  document.id,
+        "url"  =>  document.url,
+        "text" =>  nokogiri_doc.xpath("//article//text()").to_s.gsub(/\s+/, " ")
+      }).merge(document.data)
     end
   end
 

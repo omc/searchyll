@@ -84,18 +84,15 @@ module Searchyll
     end
 
     def elasticsearch_settings
-      shards = site.config['elasticsearch']['number_of_shards'] || 1
-      replicas = site.config['elasticsearch']['number_of_replicas'] || 1
-      read_yaml(elasticsearch_settings_path, {
-        'index' => {
-          'number_of_shards'   => shards,
-          'number_of_replicas' => replicas,
-          'refresh_interval'   => -1
-        }
-      })
+      settings = read_yaml(elasticsearch_settings_path)
+      settings['index'] ||= {}
+      settings['index']['number_of_shards']   ||= site.config['elasticsearch']['number_of_shards'] || 1
+      settings['index']['number_of_replicas'] ||= site.config['elasticsearch']['number_of_replicas'] || 1
+      settings['index']['refresh_interval']   ||= -1
+      settings
     end
 
-    def read_yaml(path, default)
+    def read_yaml(path, default = {})
       if path
         joined_path = File.join(@site.source, path)
         expanded_path = File.expand_path(joined_path)
