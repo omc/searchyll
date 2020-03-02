@@ -249,9 +249,11 @@ module Searchyll
     # delete old indices after a successful reindexing run
     def finalize_cleanup(http)
       return if old_indices.nil? || old_indices.empty?
-      cleanup_indices = http_delete("/#{old_indices.join(',')}")
       puts %(       Old indices: #{old_indices.join(', ')})
-      http.request(cleanup_indices)
+      old_indices.each do |index|
+        cleanup_index = http_delete("/#{index}")
+        http.request(cleanup_index)
+      end
     end
   end
 end
