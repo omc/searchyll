@@ -80,7 +80,12 @@ module Searchyll
     end
 
     def should_execute_in_current_environment?
-      site.config['elasticsearch']['production_only'] == true || site.config['environment'] == "production"
+      settings = site.config['elasticsearch']
+
+      return true if settings['environments'].nil?
+      return true unless settings['environments'].is_a?(Array)
+
+      site.config['elasticsearch']['environments'].include? site.config['environment']
     end
 
     def elasticsearch_mapping

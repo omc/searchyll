@@ -10,11 +10,10 @@ end
 
 describe Searchyll::Configuration do
 
-  it 'is expected to return true when production and flag not set' do
+  it 'is expected to return true when production no environment spessified' do
     site_config = {
       'environment' => 'production',
       'elasticsearch' => {
-        'production_only' => false
       }
     }
     site = TestSite.new site_config
@@ -22,11 +21,11 @@ describe Searchyll::Configuration do
     expect(conf.should_execute_in_current_environment?).to eq(true)
   end
 
-  it 'is expected to return true when production and flag is set' do
+  it 'is expected to return true when production and environment is nil' do
     site_config = {
       'environment' => 'production',
       'elasticsearch' => {
-        'production_only' => true
+        'environments' => nil
       }
     }
     site = TestSite.new site_config
@@ -34,11 +33,23 @@ describe Searchyll::Configuration do
     expect(conf.should_execute_in_current_environment?).to eq(true)
   end
 
-  it 'is expected to return false when not production and flag is not set' do
+  it 'is expected to return true when production and environment is not a array' do
     site_config = {
-      'environment' => 'not_production',
+      'environment' => 'production',
       'elasticsearch' => {
-        'production_only' => false
+        'environments' => true
+      }
+    }
+    site = TestSite.new site_config
+    conf = Searchyll::Configuration.new site
+    expect(conf.should_execute_in_current_environment?).to eq(true)
+  end
+
+  it 'is expected to return false when production and different environment spessified' do
+    site_config = {
+      'environment' => 'production',
+      'elasticsearch' => {
+        'environments' => ['dev']
       }
     }
     site = TestSite.new site_config
@@ -46,15 +57,16 @@ describe Searchyll::Configuration do
     expect(conf.should_execute_in_current_environment?).to eq(false)
   end
 
-  it 'is expected to return false when not production and flag is set' do
+  it 'is expected to return true when production and several environment spessified' do
     site_config = {
-      'environment' => 'not_production',
+      'environment' => 'production',
       'elasticsearch' => {
-        'production_only' => true
+        'environments' => ['dev', 'test', 'stage', 'production']
       }
     }
     site = TestSite.new site_config
     conf = Searchyll::Configuration.new site
-    expect(conf.should_execute_in_current_environment?).to eq(false)
+    expect(conf.should_execute_in_current_environment?).to eq(true)
   end
+  
 end
