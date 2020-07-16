@@ -79,8 +79,8 @@ module Searchyll
       site.config['elasticsearch']['custom_settings']
     end
 
-    def elasticsearch_production_only?
-      site.config['environment'] == "production" || site.config['elasticsearch']['production_only'] == true
+    def should_execute_in_current_environment?
+      site.config['elasticsearch']['production_only'] == true || site.config['environment'] == "production"
     end
 
     def elasticsearch_mapping

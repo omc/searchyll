@@ -13,12 +13,12 @@ begin
     config = Searchyll::Configuration.new(site)
     if config.valid?
       # return if we should only run in production
-      unless config.elasticsearch_production_only?
+      if config.should_execute_in_current_environment?
         puts "setting up indexer hook"
         indexers[site] = Searchyll::Indexer.new(config)
         indexers[site].start
       else
-        puts "Not running outside of produciton"
+        puts "Not running outside of production"
       end
     else
       puts 'Invalid Elasticsearch configuration provided, skipping indexing...'

@@ -19,7 +19,7 @@ describe Searchyll::Configuration do
     }
     site = TestSite.new site_config
     conf = Searchyll::Configuration.new site
-    expect(conf.elasticsearch_production_only?).to eq(true)
+    expect(conf.should_execute_in_current_environment?).to eq(true)
   end
 
   it 'is expected to return true when production and flag is set' do
@@ -31,7 +31,7 @@ describe Searchyll::Configuration do
     }
     site = TestSite.new site_config
     conf = Searchyll::Configuration.new site
-    expect(conf.elasticsearch_production_only?).to eq(true)
+    expect(conf.should_execute_in_current_environment?).to eq(true)
   end
 
   it 'is expected to return false when not production and flag is not set' do
@@ -43,7 +43,7 @@ describe Searchyll::Configuration do
     }
     site = TestSite.new site_config
     conf = Searchyll::Configuration.new site
-    expect(conf.elasticsearch_production_only?).to eq(false)
+    expect(conf.should_execute_in_current_environment?).to eq(false)
   end
 
   it 'is expected to return false when not production and flag is set' do
@@ -55,6 +55,6 @@ describe Searchyll::Configuration do
     }
     site = TestSite.new site_config
     conf = Searchyll::Configuration.new site
-    expect(conf.elasticsearch_production_only?).to eq(false)
+    expect(conf.should_execute_in_current_environment?).to eq(false)
   end
 end
