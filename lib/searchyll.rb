@@ -33,14 +33,11 @@ begin
 
   # gets random pages like your home page
   Jekyll::Hooks.register :pages, :post_render do |page|
-    # return if we should only run in production
-    return if config.elasticsearch_production_only
-    # strip html
-    nokogiri_doc = Nokogiri::HTML(page.output)
-
-    # puts %(        indexing page #{page.url})
-
     if (indexer = indexers[page.site])
+      # strip html
+      nokogiri_doc = Nokogiri::HTML(page.output)
+  
+      # puts %(        indexing page #{page.url})
       indexer << ({
         "id"   => page.name,
         "url"  => page.url,
@@ -51,14 +48,11 @@ begin
 
   # gets both posts and collections
   Jekyll::Hooks.register :documents, :post_render do |document|
-    # return if we should only run in production
-    return if config.elasticsearch_production_only
-    # strip html
-    nokogiri_doc = Nokogiri::HTML(document.output)
-
-    # puts %(        indexing document #{document.url})
-
     if (indexer = indexers[document.site])
+      # strip html
+      nokogiri_doc = Nokogiri::HTML(document.output)
+      # puts %(        indexing document #{document.url})
+
       indexer << ({
         "id"   =>  document.id,
         "url"  =>  document.url,
