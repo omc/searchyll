@@ -13,7 +13,7 @@ begin
     config = Searchyll::Configuration.new(site)
     if config.valid?
       # return if we should only run in production
-      return if config.elasticsearch_production_only?
+      return unless config.elasticsearch_production_only?
       puts "setting up indexer hook"
       indexers[site] = Searchyll::Indexer.new(config)
       indexers[site].start
