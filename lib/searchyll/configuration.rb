@@ -79,7 +79,7 @@ module Searchyll
       site.config['elasticsearch']['custom_settings']
     end
 
-    def elasticsearch_production_only
+    def elasticsearch_production_only?
       site.config['environment'] == "production" && site.config['elasticsearch']['production_only'] == true
     end
 
