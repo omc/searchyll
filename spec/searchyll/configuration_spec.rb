@@ -43,14 +43,14 @@ describe Searchyll::Configuration do
     }
     site = TestSite.new site_config
     conf = Searchyll::Configuration.new site
-    expect(conf.elasticsearch_production_only?).to eq(true)
+    expect(conf.elasticsearch_production_only?).to eq(false)
   end
 
   it 'is expected to return false when not production and flag is set' do
     site_config = {
       'environment' => 'not_production',
       'elasticsearch' => {
-        'production_only' => false
+        'production_only' => true
       }
     }
     site = TestSite.new site_config
