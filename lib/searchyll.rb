@@ -12,6 +12,7 @@ begin
   Jekyll::Hooks.register(:site, :pre_render) do |site|
     config = Searchyll::Configuration.new(site)
     if config.valid?
+      # return if we should only run in production
       return if config.elasticsearch_production_only
       puts "setting up indexer hook"
       indexers[site] = Searchyll::Indexer.new(config)
@@ -32,6 +33,8 @@ begin
 
   # gets random pages like your home page
   Jekyll::Hooks.register :pages, :post_render do |page|
+    # return if we should only run in production
+    return if config.elasticsearch_production_only
     # strip html
     nokogiri_doc = Nokogiri::HTML(page.output)
 
@@ -48,6 +51,8 @@ begin
 
   # gets both posts and collections
   Jekyll::Hooks.register :documents, :post_render do |document|
+    # return if we should only run in production
+    return if config.elasticsearch_production_only
     # strip html
     nokogiri_doc = Nokogiri::HTML(document.output)
 
