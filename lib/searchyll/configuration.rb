@@ -79,6 +79,10 @@ module Searchyll
       site.config['elasticsearch']['custom_settings']
     end
 
+    def elasticsearch_production_only
+      site.config['environment'] == "production" && site.config['elasticsearch']['production_only'] == true
+    end
+
     def elasticsearch_mapping
         read_yaml(elasticsearch_mapping_path, nil)
     end
