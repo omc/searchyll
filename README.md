@@ -33,6 +33,7 @@ elasticsearch:
   default_type: "post"              # Optional. Default type is "post".
   custom_settings: _es_settings.yml # Optional. No default. Relative to your src folder
   custom_mappings: _es_mappings.yml # Optional. No default. Relative to your src folder
+  production_only: false            # Optional. Defaults to false.
 ```
 
 ### Custom Settings File Example
@@ -69,4 +70,4 @@ prompt that will allow you to experiment.
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at
-https://github.com/omc/searchyll
+<https://github.com/omc/searchyll>
