@@ -18,7 +18,7 @@ begin
         indexers[site] = Searchyll::Indexer.new(config)
         indexers[site].start
       else
-        puts "Not running outside of production"
+        puts config['elasticsearch']['environments']
       end
     else
       puts 'Invalid Elasticsearch configuration provided, skipping indexing...'
