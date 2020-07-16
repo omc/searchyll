@@ -12,6 +12,7 @@ begin
   Jekyll::Hooks.register(:site, :pre_render) do |site|
     config = Searchyll::Configuration.new(site)
     if config.valid?
+      return if site.config['environment'] == "production" && site.config['elasticsearch']['production_only'] == true
       puts "setting up indexer hook"
       indexers[site] = Searchyll::Indexer.new(config)
       indexers[site].start
