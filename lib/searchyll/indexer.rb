@@ -31,16 +31,21 @@ module Searchyll
       self.working       = true
       self.timestamp     = Time.now
       self.batch_size    = BATCH_SIZE
-      
+
       # Compute a regex for detecting paths to ignore
-      escaped = (configuration.elasticsearch_ignore.map {|i| Regexp.escape(i).gsub('\*','.+?')}).join('|')
-      self.ignore_regex = Regexp.new "^(#{escaped})$", Regexp::IGNORECASE
+      begin
+        escaped = (configuration.elasticsearch_ignore.map {|i| Regexp.escape(i).gsub('\*','.+?')}).join('|')
+        self.ignore_regex = Regexp.new "^(#{escaped})$", Regexp::IGNORECASE
+      rescue => e
+        Jekyll.logger.error("searchyll: invalid ignore: #{configuration.elasticsearch_ignore}: #{e}")
+        raise
+      end
     end
 
     # Public: Add new documents for batch indexing.
     def <<(doc)
       if doc['url'] =~ self.ignore_regex
-        #puts %(        ...ignoring)
+        Jekyll.logger.debug("     ...not adding to search index (ignore regex: #{self.ignore_regex})")
       else
         queue << doc
       end
