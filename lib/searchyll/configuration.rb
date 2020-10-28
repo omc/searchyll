@@ -69,6 +69,11 @@ module Searchyll
       site.config['elasticsearch']['default_type'] || 'post'
     end
 
+    # Getter for the ignore regex
+    def elasticsearch_ignore
+      site.config['elasticsearch']['ignore'] || []
+    end
+
     # Getter for es mapping
     def elasticsearch_mapping_path
       site.config['elasticsearch']['custom_mappings']

@@ -20,6 +20,7 @@ module Searchyll
     attr_accessor :timestamp
     attr_accessor :uri
     attr_accessor :working
+    attr_accessor :ignore_regex
 
     # Initialize a basic indexer, with a Jekyll site configuration, waiting
     # to be supplied with documents for indexing.
@@ -30,11 +31,24 @@ module Searchyll
       self.working       = true
       self.timestamp     = Time.now
       self.batch_size    = BATCH_SIZE
+
+      # Compute a regex for detecting paths to ignore
+      begin
+        escaped = (configuration.elasticsearch_ignore.map {|i| Regexp.escape(i).gsub('\*','.+?')}).join('|')
+        self.ignore_regex = Regexp.new "^(#{escaped})$", Regexp::IGNORECASE
+      rescue => e
+        Jekyll.logger.error("searchyll: invalid ignore: #{configuration.elasticsearch_ignore}: #{e}")
+        raise
+      end
     end
 
     # Public: Add new documents for batch indexing.
     def <<(doc)
-      queue << doc
+      if doc['url'] =~ self.ignore_regex
+        Jekyll.logger.debug("     ...not adding to search index (ignore regex: #{self.ignore_regex})")
+      else
+        queue << doc
+      end
     end
 
     # Public: start the indexer and wait for documents to index.
