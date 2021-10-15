@@ -244,7 +244,7 @@ module Searchyll
       update_aliases.body = {
         actions: [
           { remove: {
-            index: old_indices.join(','),
+            index: "*",
             alias: configuration.elasticsearch_index_base_name
           } },
           { add: {
